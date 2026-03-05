@@ -6,7 +6,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "target": "main",
+    "site": "e-commerce-roshan-enterprises-dhn",
     "public": "dist",
     "ignore": [
       "firebase.json",

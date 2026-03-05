@@ -1,15 +1,5 @@
 {
   "projects": {
     "default": "react4-eb851"
-  },
-  "targets": {
-    "react4-eb851": {
-      "hosting": {
-        "main": [
-          "e-commerce-roshan-enterprises-dhn"
-        ]
-      }
-    }
-  },
-  "etags": {}
+  }
 }
