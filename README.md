@@ -45,3 +45,7 @@ A premium, modern e-commerce web application built for my father **Roshan Enterp
 ## 📝 Project Context
 
 This project was developed as a final project for the 1st semester, focusing on building a functional and aesthetically pleasing e-commerce interface for a real-world business use case.
+
+## 🌐 Live Preview
+
+You can view the live site here: [e-commerce-roshan-enterprises-dhn.web.app](https://e-commerce-roshan-enterprises-dhn.web.app)
