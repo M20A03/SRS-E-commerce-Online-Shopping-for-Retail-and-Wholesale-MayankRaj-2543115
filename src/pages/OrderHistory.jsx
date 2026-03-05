@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Package, Calendar, CreditCard, ChevronRight } from 'lucide-react';
 import './OrderHistory.css';
 
 const OrderHistory = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
 
     const orders = useMemo(() => {
         if (!user) return [];
