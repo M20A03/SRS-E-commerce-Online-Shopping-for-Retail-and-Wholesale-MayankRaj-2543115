@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -12,7 +12,7 @@ const Footer = () => {
                     {/* Brand Info */}
                     <div className="footer-brand">
                         <Link to="/" className="footer-logo">
-                            <Package className="logo-icon" />
+                            <img src="/logo.png" alt="Roshan Enterprises" className="logo-img" />
                             <span className="logo-text">Roshan Enterprises</span>
                         </Link>
                         <p className="footer-desc">

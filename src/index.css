@@ -145,6 +145,17 @@ ul {
   gap: 2rem;
 }
 
+.logo-img {
+  height: 2.5rem;
+  width: auto;
+  object-fit: contain;
+  transition: transform var(--transition-fast);
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
 /* Premium UI Components */
 .btn {
   display: inline-flex;

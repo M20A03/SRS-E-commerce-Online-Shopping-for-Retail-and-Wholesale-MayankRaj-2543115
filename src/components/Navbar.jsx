@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Moon, Sun, Menu, ShoppingBag, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Moon, Sun, Menu, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
@@ -39,7 +39,7 @@ const Navbar = ({ theme, toggleTheme }) => {
 
                 {/* Logo */}
                 <Link to="/" onClick={handleLogoClick} className="navbar-logo">
-                    <ShoppingBag className="logo-icon" />
+                    <img src="/logo.png" alt="Roshan Enterprises" className="logo-img" />
                     <span className="logo-text">Roshan Enterprises</span>
                 </Link>
 
