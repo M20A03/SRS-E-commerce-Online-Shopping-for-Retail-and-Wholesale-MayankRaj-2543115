@@ -35,33 +35,20 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      {/* Navigation is only visible to logged-in users */}
-      {user && <Navbar theme={theme} toggleTheme={toggleTheme} />}
+      <Navbar theme={theme} toggleTheme={toggleTheme} />
 
       <main className="main-content">
         <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           {/* Protected Routes */}
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          } />
-          <Route path="/categories" element={
-            <ProtectedRoute>
-              <Categories />
-            </ProtectedRoute>
-          } />
           <Route path="/account" element={
             <ProtectedRoute>
               <Account />
-            </ProtectedRoute>
-          } />
-          <Route path="/cart" element={
-            <ProtectedRoute>
-              <Cart />
             </ProtectedRoute>
           } />
           <Route path="/checkout" element={
@@ -77,8 +64,7 @@ const AppContent = () => {
         </Routes>
       </main>
 
-      {/* Footer is only visible to logged-in users */}
-      {user && <Footer />}
+      <Footer />
     </div>
   );
 };

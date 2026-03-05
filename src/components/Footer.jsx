@@ -53,7 +53,7 @@ const Footer = () => {
                         <ul className="footer-contact">
                             <li>
                                 <MapPin size={18} className="contact-icon" />
-                                <span><a href="https://maps.app.goo.gl/EgYHSHAsKaKmMsxT8" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Roshan enterprises</a></span>
+                                <span><a href="https://maps.app.goo.gl/EgYHSHAsKaKmMsxT8" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Roshan Enterprises</a></span>
                             </li>
                             <li>
                                 <Phone size={18} className="contact-icon" />
