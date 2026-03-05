@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Global Contexts
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 
 // Layout Components
@@ -22,7 +22,6 @@ import OrderHistory from './pages/OrderHistory';
 
 const AppContent = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  const { user } = useAuth();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
