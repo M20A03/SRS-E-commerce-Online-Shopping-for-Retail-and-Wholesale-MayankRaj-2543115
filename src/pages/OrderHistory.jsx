@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Package, Calendar, CreditCard, ChevronRight } from 'lucide-react';
@@ -15,12 +15,6 @@ const OrderHistory = () => {
             .filter(orderEntry => orderEntry[0] === user.email)
             .map(orderEntry => orderEntry[1]);
     }, [user]);
-
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-        }
-    }, [user, navigate]);
 
     if (!user) return null;
 
