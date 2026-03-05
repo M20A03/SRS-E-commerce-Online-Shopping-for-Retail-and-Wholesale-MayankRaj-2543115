@@ -1,0 +1,54 @@
+
+C:\Users\mayan\OneDrive\Desktop\E-commerce\src\pages\Account.jsx
+  24:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  22 |             navigate('/login');
+  23 |         } else {
+> 24 |             setFormData({
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |                 firstName: user.firstName || '',
+  26 |                 lastName: user.lastName || '',
+  27 |                 contact: user.contact || '',  react-hooks/set-state-in-effect
+
+C:\Users\mayan\OneDrive\Desktop\E-commerce\src\pages\Home.jsx
+  13:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  11 |     useEffect(() => {
+  12 |         // Filter to show only featured products
+> 13 |         setFeaturedProducts(products.filter(p => p.featured).slice(0, 4));
+     |         ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  14 |     }, []);
+  15 |
+  16 |     return (  react-hooks/set-state-in-effect
+
+C:\Users\mayan\OneDrive\Desktop\E-commerce\src\pages\OrderHistory.jsx
+  24:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  22 |             .map(orderEntry => orderEntry[1]);
+  23 |
+> 24 |         setOrders(userOrders);
+     |         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     }, [user, navigate]);
+  26 |
+  27 |     if (!user) return null;  react-hooks/set-state-in-effect
+
+??? 3 problems (3 errors, 0 warnings)
+
