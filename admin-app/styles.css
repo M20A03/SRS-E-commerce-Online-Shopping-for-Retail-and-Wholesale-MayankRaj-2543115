@@ -1,0 +1,135 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f2f5f8;
+  color: #132235;
+}
+
+.shell {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #dbe6f0;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #c5d3e2;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+}
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #0d6efd;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-soft {
+  background: #eef4fb;
+  color: #10324f;
+}
+
+.muted {
+  color: #4e6479;
+  margin: 4px 0 10px;
+}
+
+.error {
+  color: #b42318;
+  min-height: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+.role-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid #dbe6f0;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.item p {
+  margin: 0;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-danger {
+  background: #b42318;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #eef4fb;
+}

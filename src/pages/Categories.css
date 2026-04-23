@@ -1,0 +1,123 @@
+.categories-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 2rem;
+}
+
+.categories-layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+}
+
+.categories-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 6rem;
+    /* below navbar */
+}
+
+.sidebar-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-btn {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    background-color: transparent;
+}
+
+.category-btn:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.category-btn.active {
+    background-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.categories-main {
+    flex-grow: 1;
+}
+
+.categories-results-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.categories-controls {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+}
+
+.categories-search {
+    min-width: 220px;
+}
+
+.categories-sort {
+    min-width: 170px;
+}
+
+.empty-state {
+    padding: 4rem 0;
+    text-align: center;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .categories-layout {
+        flex-direction: column;
+    }
+
+    .categories-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    .category-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .category-btn {
+        width: auto;
+    }
+
+    .categories-results-bar,
+    .categories-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .categories-search,
+    .categories-sort {
+        min-width: 0;
+        width: 100%;
+    }
+}
