@@ -20,6 +20,16 @@ A premium, modern e-commerce web application built for my father **Roshan Enterp
 - **Backend/Auth**: Firebase
 - **State Management**: React Context API
 
+## 📷 Image Upload Options
+
+The admin app supports multiple image upload flows:
+
+- **Google Cloud Storage**: Use a small signed-URL server and a GCS bucket.
+- **Cloudinary**: Optional unsigned upload preset.
+- **Firestore data URL fallback**: For small manual uploads when no cloud storage is available.
+
+If you want to use Google Cloud Storage, run the signed upload server and set the env vars from `.env.example`.
+
 ## 📦 Getting Started
 
 ### Prerequisites
@@ -41,6 +51,17 @@ A premium, modern e-commerce web application built for my father **Roshan Enterp
    ```bash
    npm run dev
    ```
+
+### Google Cloud Storage Upload Setup
+
+1. Set `GCS_BUCKET` in your shell or `.env` file for the signed URL server.
+2. Start the signed URL server:
+   ```bash
+   npm run gcs-server
+   ```
+3. Set `GOOGLE_APPLICATION_CREDENTIALS` to a service-account JSON file that can sign GCS upload URLs.
+4. In `admin-app/.env`, set `VITE_GCS_UPLOAD_ENDPOINT=http://localhost:8787/api/gcs/upload-url`.
+5. Make sure your GCS bucket is readable by shoppers if you want product images to load directly from the bucket URL.
 
 ## 📝 Project Context
 

@@ -19,7 +19,6 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
@@ -124,15 +123,130 @@ const App = () => {
   const uploadImage = async (file) => {
     if (!file) return null;
 
+    const fileToDataUrl = () => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Unable to read image file.'));
+      reader.readAsDataURL(file);
+    });
+
+    const fileToBase64 = () => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        // result is like "data:<mime>;base64,<data>" — strip the prefix
+        const comma = result.indexOf(',');
+        resolve(comma >= 0 ? result.slice(comma + 1) : result);
+      };
+      reader.onerror = () => reject(new Error('Unable to read image file.'));
+      reader.readAsDataURL(file);
+    });
+
     try {
-      const fileName = `products/${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
+      const gcsUploadEndpoint = import.meta.env.VITE_GCS_UPLOAD_ENDPOINT;
+      const gcsProxyEndpoint = import.meta.env.VITE_GCS_UPLOAD_PROXY_ENDPOINT;
+
+      // If a server-side proxy endpoint is configured, use it (avoids GCS CORS issues)
+      if (gcsProxyEndpoint) {
+        const base64 = await fileToBase64();
+        const proxyRes = await fetch(gcsProxyEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, contentType: file.type || 'application/octet-stream', base64 })
+        });
+
+        const proxyData = await proxyRes.json();
+        if (!proxyRes.ok) throw new Error(proxyData?.error || 'Proxy upload failed');
+        return proxyData.publicUrl || '';
+      }
+
+      if (gcsUploadEndpoint) {
+        const prepareResponse = await fetch(gcsUploadEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type || 'application/octet-stream'
+          })
+        });
+
+        const prepareData = await prepareResponse.json();
+        if (!prepareResponse.ok) {
+          throw new Error(prepareData?.error || 'Failed to prepare Google Cloud Storage upload.');
+        }
+
+        const uploadResponse = await fetch(prepareData.uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream'
+          },
+          body: file
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Google Cloud Storage upload failed.');
+        }
+
+        return prepareData.publicUrl || prepareData.downloadUrl || '';
+      }
+
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+      if (cloudName && uploadPreset) {
+        const form = new FormData();
+        form.append('file', file);
+        form.append('upload_preset', uploadPreset);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+          method: 'POST',
+          body: form
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error?.message || 'Cloudinary upload failed');
+        return data.secure_url;
+      }
+
+      // No cloud service configured: embed a small image directly as a data URL.
+      // This works without Storage/Billing, but keep images small because Firestore docs are limited.
+      const dataUrl = await fileToDataUrl();
+      return dataUrl;
     } catch (uploadError) {
       throw new Error(uploadError.message || 'Image upload failed.');
     }
+  };
+
+  const createBulkProducts = async (files, baseProductData) => {
+    const fileList = Array.from(files || []).filter(Boolean);
+
+    if (fileList.length === 0) {
+      throw new Error('Please select at least one image file.');
+    }
+
+    const createdAt = new Date().toISOString();
+
+    for (const [index, file] of fileList.entries()) {
+      const image = await uploadImage(file);
+      const fallbackName = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+      const productName = `${baseProductData.namePrefix || 'Photo'} ${index + 1}`.trim();
+
+      await addDoc(collection(db, 'products'), {
+        name: productName || fallbackName || `Photo ${index + 1}`,
+        price: Number(baseProductData.price || 0),
+        category: baseProductData.category || 'others',
+        image,
+        description: baseProductData.description || fallbackName || 'Uploaded from device',
+        featured: Boolean(baseProductData.featured),
+        isActive: Boolean(baseProductData.isActive),
+        stock: 10,
+        createdAt,
+        updatedAt: createdAt,
+        uploadBatch: baseProductData.namePrefix || 'bulk-upload'
+      });
+    }
+
+    return fileList.length;
   };
 
   const loadProducts = async () => {
@@ -503,6 +617,7 @@ const App = () => {
           productForm={productForm}
           setProductForm={setProductForm}
           handleProductCreate={handleProductCreate}
+          createBulkProducts={createBulkProducts}
           toggleVisibility={toggleVisibility}
           removeProduct={removeProduct}
           updateProduct={updateProduct}

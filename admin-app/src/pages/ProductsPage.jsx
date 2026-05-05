@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 export default function ProductsPage({
   error,
   status,
+  setStatus,
   isSuperAdmin,
   roleStatus,
   roleEmail,
@@ -13,6 +14,7 @@ export default function ProductsPage({
   productForm,
   setProductForm,
   handleProductCreate,
+  createBulkProducts,
   toggleVisibility,
   removeProduct,
   updateProduct,
@@ -21,6 +23,16 @@ export default function ProductsPage({
   uploadImage
 }) {
   const [productSearch, setProductSearch] = useState('');
+  const [bulkForm, setBulkForm] = useState({
+    files: [],
+    namePrefix: '',
+    price: '',
+    category: 'others',
+    description: '',
+    featured: false,
+    isActive: true
+  });
+  const [imageSource, setImageSource] = useState('url');
   const [editingProductId, setEditingProductId] = useState('');
   const [editForm, setEditForm] = useState({
     name: '',
@@ -48,7 +60,9 @@ export default function ProductsPage({
   const handleImageUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+    // if user chose device upload, ensure image URL is cleared
+    setImageSource('device');
+    setProductForm((prev) => ({ ...prev, image: '' }));
     setProductForm((prev) => ({
       ...prev,
       imageFile: file,
@@ -66,7 +80,36 @@ export default function ProductsPage({
     }));
   };
 
+  const handleBulkFilesChange = (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    setBulkForm((prev) => ({
+      ...prev,
+      files: selectedFiles
+    }));
+  };
+
+  const handleBulkUpload = async (event) => {
+    event.preventDefault();
+
+    if (!bulkForm.files.length) {
+      return;
+    }
+
+    const uploadedCount = await createBulkProducts(bulkForm.files, bulkForm);
+    setStatus?.(`Uploaded ${uploadedCount} photo${uploadedCount === 1 ? '' : 's'} successfully.`);
+    setBulkForm({
+      files: [],
+      namePrefix: '',
+      price: '',
+      category: 'others',
+      description: '',
+      featured: false,
+      isActive: true
+    });
+  };
+
   const handleImageUrlChange = (event) => {
+    setImageSource('url');
     setProductForm((prev) => ({
       ...prev,
       image: event.target.value,
@@ -179,13 +222,38 @@ export default function ProductsPage({
           </select>
 
           <div className="image-upload-container">
-            <p className="muted">Image URL</p>
-            <input
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              value={productForm.image}
-              onChange={handleImageUrlChange}
-            />
+            <p className="muted">Image Source</p>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: 8 }}>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  type="radio"
+                  name="imageSource"
+                  value="url"
+                  checked={imageSource === 'url'}
+                  onChange={() => { setImageSource('url'); setProductForm((prev) => ({ ...prev, imageFile: null })); }}
+                />
+                <span>Use URL</span>
+              </label>
+              <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  type="radio"
+                  name="imageSource"
+                  value="device"
+                  checked={imageSource === 'device'}
+                  onChange={() => { setImageSource('device'); setProductForm((prev) => ({ ...prev, image: '' })); }}
+                />
+                <span>Upload from Device</span>
+              </label>
+            </div>
+
+            {imageSource === 'url' && (
+              <input
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={productForm.image}
+                onChange={handleImageUrlChange}
+              />
+            )}
           </div>
 
           <div className="image-upload-container">
@@ -195,10 +263,11 @@ export default function ProductsPage({
                 accept="image/*"
                 onChange={handleImageUpload}
                 className="file-input-hidden"
+                disabled={imageSource !== 'device'}
               />
               <span className="file-input-btn">Upload from Device</span>
             </label>
-            {productForm.imageFile && (
+            {productForm.imageFile && imageSource === 'device' && (
               <p className="muted">Selected: {productForm.imageFile.name}</p>
             )}
           </div>
@@ -233,6 +302,71 @@ export default function ProductsPage({
         </form>
         {status && <p className="muted">{status}</p>}
         {error && <p className="error">{error}</p>}
+      </section>
+
+      <section className="card">
+        <h2>Bulk Photo Upload</h2>
+        <p className="muted">Select many photos at once. Each file will create a separate product entry automatically.</p>
+        <form className="form-grid" onSubmit={handleBulkUpload}>
+          <input
+            type="text"
+            placeholder="Name prefix e.g. Product"
+            value={bulkForm.namePrefix}
+            onChange={(event) => setBulkForm((prev) => ({ ...prev, namePrefix: event.target.value }))}
+          />
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Default price for all photos"
+            value={bulkForm.price}
+            onChange={(event) => setBulkForm((prev) => ({ ...prev, price: event.target.value }))}
+          />
+          <select
+            value={bulkForm.category}
+            onChange={(event) => setBulkForm((prev) => ({ ...prev, category: event.target.value }))}
+          >
+            <option value="oil">Oil</option>
+            <option value="detergent">Detergent</option>
+            <option value="tea">Tea</option>
+            <option value="agarbatti">Agarbatti</option>
+            <option value="others">Others</option>
+          </select>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleBulkFilesChange}
+          />
+          <textarea
+            rows={2}
+            placeholder="Description for all uploaded photos"
+            value={bulkForm.description}
+            onChange={(event) => setBulkForm((prev) => ({ ...prev, description: event.target.value }))}
+          />
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={bulkForm.featured}
+              onChange={(event) => setBulkForm((prev) => ({ ...prev, featured: event.target.checked }))}
+            />
+            <span>Featured</span>
+          </label>
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={bulkForm.isActive}
+              onChange={(event) => setBulkForm((prev) => ({ ...prev, isActive: event.target.checked }))}
+            />
+            <span>Visible in store</span>
+          </label>
+          <button className="btn" type="submit" disabled={!bulkForm.files.length}>
+            Upload {bulkForm.files.length ? `${bulkForm.files.length} Photo(s)` : 'Photos'}
+          </button>
+        </form>
+        {bulkForm.files.length > 0 && (
+          <p className="muted">Selected {bulkForm.files.length} files ready for upload.</p>
+        )}
       </section>
 
       <section className="card">
