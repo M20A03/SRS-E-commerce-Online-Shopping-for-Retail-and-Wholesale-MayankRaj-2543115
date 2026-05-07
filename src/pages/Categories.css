@@ -2,18 +2,40 @@
     margin-bottom: 3rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 2rem;
+    animation: slideDown 400ms ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .categories-layout {
     display: flex;
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
-
     gap: 3rem;
     align-items: flex-start;
+    animation: fadeIn 500ms ease-out 100ms both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
 }
 
 .categories-sidebar {
@@ -21,7 +43,6 @@
     flex-shrink: 0;
     position: sticky;
     top: 6rem;
-    /* below navbar */
 }
 
 .sidebar-title {
@@ -34,7 +55,7 @@
 .category-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.625rem;
 }
 
 .category-btn {
@@ -46,28 +67,20 @@
     font-weight: 500;
     transition: all var(--transition-fast);
     background-color: transparent;
-    @media (max-width: 768px) {
-        .products-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 480px) {
-        .products-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+    border: 1px solid transparent;
 }
 
 .category-btn:hover {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
 .category-btn.active {
-    background-color: var(--accent-color);
+    background: linear-gradient(135deg, var(--accent-color), rgba(37, 99, 235, 0.9));
     color: white;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    border-color: var(--accent-color);
 }
 
 .categories-main {
@@ -86,16 +99,36 @@
 
 .categories-controls {
     display: flex;
-    gap: 0.65rem;
+    gap: 0.75rem;
     align-items: center;
 }
 
 .categories-search {
     min-width: 220px;
+    transition: all 200ms ease;
+}
+
+.categories-search:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .categories-sort {
     min-width: 170px;
+    transition: all 200ms ease;
+}
+
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
 }
 
 .empty-state {

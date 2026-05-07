@@ -11,7 +11,7 @@ Usage:
 This script updates every document in the `products` collection.
 */
 
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
 
 if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
   console.error('Set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON path.');

@@ -96,10 +96,17 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
                                     onLoad={() => setImageLoaded(true)}
                                 />
                                 {imgs.length > 1 && (
-                                    <div className="product-card__carousel-controls">
-                                        <button type="button" className="carousel-btn carousel-btn--prev" onClick={() => setCurrentIndex((i) => (i - 1 + imgs.length) % imgs.length)} aria-label="Previous image">‹</button>
-                                        <button type="button" className="carousel-btn carousel-btn--next" onClick={() => setCurrentIndex((i) => (i + 1) % imgs.length)} aria-label="Next image">›</button>
-                                    </div>
+                                    <>
+                                        <div className="product-card__carousel-controls">
+                                            <button type="button" className="carousel-btn carousel-btn--prev" onClick={() => setCurrentIndex((i) => (i - 1 + imgs.length) % imgs.length)} aria-label="Previous image">‹</button>
+                                            <button type="button" className="carousel-btn carousel-btn--next" onClick={() => setCurrentIndex((i) => (i + 1) % imgs.length)} aria-label="Next image">›</button>
+                                        </div>
+                                        <div className="product-card__image-indicators">
+                                            {imgs.map((_, i) => (
+                                                <div key={i} className={`image-indicator ${i === currentIndex ? 'active' : ''}`} />
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </>
                         );
