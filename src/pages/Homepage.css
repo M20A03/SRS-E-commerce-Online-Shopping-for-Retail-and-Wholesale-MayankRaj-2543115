@@ -90,6 +90,18 @@
   margin-bottom: 0.25rem;
 }
 
+  /* Override Tailwind grid for responsive layout */
+  .grid {
+    display: grid;
+  }
+
+  .grid.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .gap-8 {
+    gap: 2rem;
+  }
 .hero-slider__title {
   font-family: var(--font-display);
   font-size: clamp(1rem, 2vw, 1.25rem);
@@ -364,6 +376,10 @@
   .quickview-content {
     padding: 0;
   }
+
+    .grid.grid-cols-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 480px) {
@@ -377,4 +393,12 @@
   .homepage__promos {
     gap: 0.75rem;
   }
+
+    .grid.grid-cols-4 {
+      grid-template-columns: 1fr;
+    }
+
+    .gap-8 {
+      gap: 1rem;
+    }
 }

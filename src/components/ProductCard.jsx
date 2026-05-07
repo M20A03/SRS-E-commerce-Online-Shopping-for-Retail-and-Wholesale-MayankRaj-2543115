@@ -9,6 +9,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
     const cardRef = useRef(null);
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
     const MotionArticle = motion.article;
 
     const stock = useMemo(() => {
@@ -81,14 +82,28 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
                 <div className="product-card__image-shell">
                     {!imageLoaded && <div className="skeleton product-card__skeleton" />}
-                    <img
-                        src={product.image}
-                        alt={product.name}
-                        className={`product-card__image ${imageLoaded ? 'is-loaded' : ''}`}
-                        loading="lazy"
-                        decoding="async"
-                        onLoad={() => setImageLoaded(true)}
-                    />
+                    {(() => {
+                        const imgs = Array.isArray(product.images) && product.images.length ? product.images : (product.image ? [product.image] : []);
+                        const src = imgs[currentIndex] || '';
+                        return (
+                            <>
+                                <img
+                                    src={src}
+                                    alt={product.name}
+                                    className={`product-card__image ${imageLoaded ? 'is-loaded' : ''}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    onLoad={() => setImageLoaded(true)}
+                                />
+                                {imgs.length > 1 && (
+                                    <div className="product-card__carousel-controls">
+                                        <button type="button" className="carousel-btn carousel-btn--prev" onClick={() => setCurrentIndex((i) => (i - 1 + imgs.length) % imgs.length)} aria-label="Previous image">‹</button>
+                                        <button type="button" className="carousel-btn carousel-btn--next" onClick={() => setCurrentIndex((i) => (i + 1) % imgs.length)} aria-label="Next image">›</button>
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                     <div className="product-card__hover-panel">
                         <button type="button" className="magnetic-button magnetic-button--soft" onClick={() => onQuickView?.(product)}>
                             <Eye size={16} /> Quick view

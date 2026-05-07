@@ -8,6 +8,7 @@ const Categories = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('featured');
     const { products, categories, isLoading } = useProducts();
 
@@ -24,11 +25,11 @@ const Categories = () => {
     }, [activeCategory]);
 
     const visibleProducts = useMemo(() => {
-        let next = filteredProducts.filter((product) => {
-            if (!searchTerm.trim()) return true;
-            const text = `${product.name} ${product.description} ${product.category}`.toLowerCase();
-            return text.includes(searchTerm.trim().toLowerCase());
-        });
+            let next = filteredProducts.filter((product) => {
+                if (!searchQuery.trim()) return true;
+                const text = `${product.name} ${product.description} ${product.category}`.toLowerCase();
+                return text.includes(searchQuery);
+            });
 
         if (sortBy === 'price-low') {
             next = [...next].sort((a, b) => a.price - b.price);
@@ -42,6 +43,12 @@ const Categories = () => {
 
         return next;
     }, [filteredProducts, searchTerm, sortBy]);
+
+    // debounce the search input to reduce re-computation while typing
+    React.useEffect(() => {
+        const t = setTimeout(() => setSearchQuery(searchTerm.trim().toLowerCase()), 250);
+        return () => clearTimeout(t);
+    }, [searchTerm]);
 
     const handleCategoryClick = (catId) => {
         if (catId === 'all') {

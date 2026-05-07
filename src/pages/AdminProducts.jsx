@@ -76,7 +76,9 @@ const AdminProducts = () => {
         featured: false,
         isActive: true
       });
-      window.location.reload();
+      // useProducts hook listens to Firestore and will refresh the list automatically
+      setSaving(false);
+      setError('');
     } catch (createError) {
       setError(createError.message || 'Failed to create product.');
     } finally {
@@ -90,7 +92,7 @@ const AdminProducts = () => {
         isActive: !currentValue,
         updatedAt: new Date().toISOString()
       });
-      window.location.reload();
+      // snapshot listener will update UI
     } catch (toggleError) {
       setError(toggleError.message || 'Failed to update visibility.');
     }
@@ -104,7 +106,7 @@ const AdminProducts = () => {
 
     try {
       await deleteDoc(doc(db, 'products', productId));
-      window.location.reload();
+      // snapshot listener will update UI
     } catch (deleteError) {
       setError(deleteError.message || 'Failed to delete product.');
     }

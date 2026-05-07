@@ -14,24 +14,15 @@ export default function ProductsPage({
   productForm,
   setProductForm,
   handleProductCreate,
-  createBulkProducts,
   toggleVisibility,
   removeProduct,
   updateProduct,
+  toggleCarousel,
   productsLoading,
   loadProducts,
   uploadImage
 }) {
   const [productSearch, setProductSearch] = useState('');
-  const [bulkForm, setBulkForm] = useState({
-    files: [],
-    namePrefix: '',
-    price: '',
-    category: 'others',
-    description: '',
-    featured: false,
-    isActive: true
-  });
   const [imageSource, setImageSource] = useState('url');
   const [editingProductId, setEditingProductId] = useState('');
   const [editForm, setEditForm] = useState({
@@ -41,8 +32,12 @@ export default function ProductsPage({
     description: '',
     isActive: true,
     featured: false,
+    showOnHomepage: true,
+    showInCarousel: false,
     image: '',
-    imageFile: null
+    imageFile: null,
+    images: [],
+    imageFiles: []
   });
 
   const filteredProducts = useMemo(() => {
@@ -58,25 +53,26 @@ export default function ProductsPage({
   }, [products, productSearch]);
 
   const handleImageUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
     // if user chose device upload, ensure image URL is cleared
     setImageSource('device');
     setProductForm((prev) => ({ ...prev, image: '' }));
     setProductForm((prev) => ({
       ...prev,
-      imageFile: file,
-      image: prev.image || ''
+      imageFiles: files,
+      imageFile: files[0] || null
     }));
   };
 
   const handleEditImageUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
 
     setEditForm((prev) => ({
       ...prev,
-      imageFile: file
+      imageFiles: files,
+      imageFile: files[0]
     }));
   };
 
@@ -126,8 +122,13 @@ export default function ProductsPage({
       description: product.description || '',
       isActive: product.isActive !== false,
       featured: Boolean(product.featured),
-      image: product.image || '',
-      imageFile: null
+      showOnHomepage: product.showOnHomepage !== false,
+      showInCarousel: product.showInCarousel === true,
+      // populate existing images array if present, fallback to legacy image
+      images: Array.isArray(product.images) && product.images.length ? product.images : (product.image ? [product.image] : []),
+      image: product.image || (product.images && product.images[0]) || '',
+      imageFile: null,
+      imageFiles: []
     });
   };
 
@@ -140,8 +141,11 @@ export default function ProductsPage({
       description: '',
       isActive: true,
       featured: false,
+      showInCarousel: false,
       image: '',
-      imageFile: null
+      imageFile: null,
+      images: [],
+      imageFiles: []
     });
   };
 
@@ -150,9 +154,20 @@ export default function ProductsPage({
       return;
     }
 
-    let finalImage = editForm.image.trim();
-    if (editForm.imageFile) {
-      finalImage = await uploadImage(editForm.imageFile);
+    // determine final images array for update
+    let finalImages = Array.isArray(editForm.images) ? [...editForm.images] : [];
+
+    if (editForm.imageFiles && editForm.imageFiles.length) {
+      finalImages = [];
+      for (const f of editForm.imageFiles) {
+        const url = await uploadImage(f);
+        finalImages.push(url);
+      }
+    } else if (editForm.imageFile) {
+      const url = await uploadImage(editForm.imageFile);
+      finalImages = [url];
+    } else if (editForm.image && finalImages.length === 0) {
+      finalImages = [editForm.image.trim()];
     }
 
     await updateProduct(productId, {
@@ -160,8 +175,11 @@ export default function ProductsPage({
       price: Number(editForm.price),
       category: editForm.category,
       description: editForm.description.trim(),
-      image: finalImage,
+      image: finalImages[0] || '',
+      images: finalImages,
       featured: Boolean(editForm.featured),
+      showOnHomepage: Boolean(editForm.showOnHomepage),
+      showInCarousel: Boolean(editForm.showInCarousel),
       isActive: Boolean(editForm.isActive)
     });
 
@@ -261,14 +279,15 @@ export default function ProductsPage({
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleImageUpload}
                 className="file-input-hidden"
                 disabled={imageSource !== 'device'}
               />
               <span className="file-input-btn">Upload from Device</span>
             </label>
-            {productForm.imageFile && imageSource === 'device' && (
-              <p className="muted">Selected: {productForm.imageFile.name}</p>
+            {imageSource === 'device' && (
+              <p className="muted">Selected: {(productForm.imageFiles && productForm.imageFiles.length) ? productForm.imageFiles.map(f => f.name).join(', ') : (productForm.imageFile ? productForm.imageFile.name : 'None')}</p>
             )}
           </div>
 
@@ -292,6 +311,24 @@ export default function ProductsPage({
           <label className="check-row">
             <input
               type="checkbox"
+              checked={productForm.showOnHomepage !== false}
+              onChange={(event) => setProductForm((prev) => ({ ...prev, showOnHomepage: event.target.checked }))}
+            />
+            <span>Show on Homepage</span>
+          </label>
+
+          <label className="check-row">
+            <input
+              type="checkbox"
+              checked={productForm.showInCarousel === true}
+              onChange={(event) => setProductForm((prev) => ({ ...prev, showInCarousel: event.target.checked }))}
+            />
+            <span>Include in Carousel</span>
+          </label>
+
+          <label className="check-row">
+            <input
+              type="checkbox"
               checked={productForm.isActive}
               onChange={(event) => setProductForm((prev) => ({ ...prev, isActive: event.target.checked }))}
             />
@@ -305,74 +342,10 @@ export default function ProductsPage({
       </section>
 
       <section className="card">
-        <h2>Bulk Photo Upload</h2>
-        <p className="muted">Select many photos at once. Each file will create a separate product entry automatically.</p>
-        <form className="form-grid" onSubmit={handleBulkUpload}>
-          <input
-            type="text"
-            placeholder="Name prefix e.g. Product"
-            value={bulkForm.namePrefix}
-            onChange={(event) => setBulkForm((prev) => ({ ...prev, namePrefix: event.target.value }))}
-          />
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Default price for all photos"
-            value={bulkForm.price}
-            onChange={(event) => setBulkForm((prev) => ({ ...prev, price: event.target.value }))}
-          />
-          <select
-            value={bulkForm.category}
-            onChange={(event) => setBulkForm((prev) => ({ ...prev, category: event.target.value }))}
-          >
-            <option value="oil">Oil</option>
-            <option value="detergent">Detergent</option>
-            <option value="tea">Tea</option>
-            <option value="agarbatti">Agarbatti</option>
-            <option value="others">Others</option>
-          </select>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleBulkFilesChange}
-          />
-          <textarea
-            rows={2}
-            placeholder="Description for all uploaded photos"
-            value={bulkForm.description}
-            onChange={(event) => setBulkForm((prev) => ({ ...prev, description: event.target.value }))}
-          />
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={bulkForm.featured}
-              onChange={(event) => setBulkForm((prev) => ({ ...prev, featured: event.target.checked }))}
-            />
-            <span>Featured</span>
-          </label>
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={bulkForm.isActive}
-              onChange={(event) => setBulkForm((prev) => ({ ...prev, isActive: event.target.checked }))}
-            />
-            <span>Visible in store</span>
-          </label>
-          <button className="btn" type="submit" disabled={!bulkForm.files.length}>
-            Upload {bulkForm.files.length ? `${bulkForm.files.length} Photo(s)` : 'Photos'}
-          </button>
-        </form>
-        {bulkForm.files.length > 0 && (
-          <p className="muted">Selected {bulkForm.files.length} files ready for upload.</p>
-        )}
-      </section>
-
-      <section className="card">
         <div className="row-title">
           <h2>Manage Products</h2>
           <div className="row-title-actions">
+            <span className="muted" style={{ fontWeight: 500, marginRight: '16px' }}>Total: {filteredProducts.length}</span>
             <input
               className="search-input"
               type="search"
@@ -426,12 +399,15 @@ export default function ProductsPage({
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={handleEditImageUpload}
                         className="file-input-hidden"
                       />
-                      <span className="file-input-btn">Upload New Image</span>
+                      <span className="file-input-btn">Upload New Image(s)</span>
                     </label>
-                    {editForm.imageFile && <p className="muted">Selected: {editForm.imageFile.name}</p>}
+                    {editForm.imageFiles && editForm.imageFiles.length > 0 && (
+                      <p className="muted">Selected: {editForm.imageFiles.map(f => f.name).join(', ')}</p>
+                    )}
                     <textarea
                       rows={2}
                       value={editForm.description}
@@ -446,6 +422,22 @@ export default function ProductsPage({
                         />
                         <span>Featured</span>
                       </label>
+                       <label className="check-row">
+                         <input
+                           type="checkbox"
+                           checked={editForm.showOnHomepage !== false}
+                           onChange={(event) => setEditForm((prev) => ({ ...prev, showOnHomepage: event.target.checked }))}
+                         />
+                         <span>Show on Homepage</span>
+                       </label>
+                       <label className="check-row">
+                         <input
+                           type="checkbox"
+                           checked={editForm.showInCarousel === true}
+                           onChange={(event) => setEditForm((prev) => ({ ...prev, showInCarousel: event.target.checked }))}
+                         />
+                         <span>Include in Carousel</span>
+                       </label>
                       <label className="check-row">
                         <input
                           type="checkbox"
@@ -468,10 +460,16 @@ export default function ProductsPage({
                         Category: {product.category || 'others'} | Price: Rs {Number(product.price || 0).toFixed(2)}
                         {' '}
                         <span className="badge">{product.isActive === false ? 'Hidden' : 'Visible'}</span>
+                        {product.showInCarousel === true && (
+                          <span className="badge" style={{ marginLeft: 8, backgroundColor: 'var(--accent-color)', color: '#fff' }}>Carousel</span>
+                        )}
                       </p>
                     </div>
                     <div className="item-actions">
                       <button className="btn btn-soft" type="button" onClick={() => startEdit(product)}>Edit</button>
+                      <button className="btn btn-soft" type="button" onClick={() => toggleCarousel && toggleCarousel(product)}>
+                        {product.showInCarousel === true ? 'Remove from carousel' : 'Add to carousel'}
+                      </button>
                       <button className="btn btn-soft" type="button" onClick={() => toggleVisibility(product)}>
                         {product.isActive === false ? 'Show' : 'Hide'}
                       </button>

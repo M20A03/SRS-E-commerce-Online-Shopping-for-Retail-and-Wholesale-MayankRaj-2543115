@@ -51,7 +51,12 @@ const HeroSlider = ({ products, onAddToCart }) => {
             className="hero-slider__slide"
           >
             <div className="hero-slider__image-wrap">
-              <img src={products[active].image} alt={products[active].name} className="hero-slider__image" />
+              {(() => {
+                const p = products[active];
+                const imgs = Array.isArray(p.images) && p.images.length ? p.images : (p.image ? [p.image] : []);
+                const src = imgs[0] || '';
+                return <img src={src} alt={p.name} className="hero-slider__image" />;
+              })()}
             </div>
             <div className="hero-slider__content card">
               <span className="hero-slider__category">{products[active].category}</span>
@@ -92,10 +97,12 @@ const Homepage = ({ onOpenCart }) => {
   const itemsPerPage = 12;
 
   const homepageProducts = useMemo(() => {
-    return products.filter((p) => ['oil', 'tea', 'detergent', 'others'].includes(p.category));
+     return products.filter((p) => ['oil', 'tea', 'detergent', 'others'].includes(p.category) && p.showOnHomepage !== false);
   }, [products]);
 
   const featuredProducts = useMemo(() => homepageProducts.filter((p) => p.featured).slice(0, 4), [homepageProducts]);
+
+  const carouselProducts = useMemo(() => homepageProducts.filter((p) => p.showInCarousel === true).slice(0, 4), [homepageProducts]);
 
   useEffect(() => {
     const timer = setTimeout(() => setSearchQuery(searchInput.trim().toLowerCase()), 300);
@@ -107,7 +114,7 @@ const Homepage = ({ onOpenCart }) => {
       const matchCat = activeCategory === 'all' || p.category === activeCategory;
       const text = `${p.name} ${p.description} ${p.category}`.toLowerCase();
       const matchSearch = !searchQuery || text.includes(searchQuery);
-      return matchCat && matchSearch;
+       return matchCat && matchSearch && p.showOnHomepage !== false;
     });
   }, [activeCategory, searchQuery, homepageProducts]);
 
@@ -154,7 +161,7 @@ const Homepage = ({ onOpenCart }) => {
               </div>
             </div>
             <div className="homepage__hero-visual">
-              <HeroSlider products={featuredProducts.length > 0 ? featuredProducts : homepageProducts.slice(0, 4)} onAddToCart={addToCart} />
+              <HeroSlider products={carouselProducts.length > 0 ? carouselProducts : (featuredProducts.length > 0 ? featuredProducts : homepageProducts.slice(0, 4))} onAddToCart={addToCart} />
             </div>
           </div>
         </div>
@@ -281,7 +288,11 @@ const Homepage = ({ onOpenCart }) => {
               </button>
               <div className="quickview-grid">
                 <div className="quickview-image-wrap">
-                  <img src={quickViewProduct.image} alt={quickViewProduct.name} className="quickview-image" />
+                  {(() => {
+                    const imgs = Array.isArray(quickViewProduct.images) && quickViewProduct.images.length ? quickViewProduct.images : (quickViewProduct.image ? [quickViewProduct.image] : []);
+                    const src = imgs[0] || '';
+                    return <img src={src} alt={quickViewProduct.name} className="quickview-image" />;
+                  })()}
                 </div>
                 <div className="quickview-content">
                   <span className="quickview-category">{quickViewProduct.category}</span>

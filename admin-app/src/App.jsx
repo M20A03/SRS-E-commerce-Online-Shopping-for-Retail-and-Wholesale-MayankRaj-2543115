@@ -30,8 +30,12 @@ const initialProductState = {
   category: 'oil',
   image: '',
   imageFile: null,
+  images: [],
+  imageFiles: [],
   description: '',
   featured: false,
+  showOnHomepage: true,
+  showInCarousel: false,
   isActive: true
 };
 
@@ -504,25 +508,39 @@ const App = () => {
       return;
     }
 
-    if (!productForm.image && !productForm.imageFile) {
-      setError('Please provide either image URL or upload image file.');
+    // require at least one image via URL or files
+    if (!productForm.image && (!productForm.imageFiles || productForm.imageFiles.length === 0) && !productForm.imageFile) {
+      setError('Please provide at least one image URL or upload one or more image files.');
       return;
     }
 
     try {
-      let finalImageUrl = productForm.image;
+      // assemble images array (supports multiple files)
+      const images = [];
 
-      if (productForm.imageFile) {
-        finalImageUrl = await uploadImage(productForm.imageFile);
+      if (productForm.imageFiles && productForm.imageFiles.length) {
+        for (const file of productForm.imageFiles) {
+          const url = await uploadImage(file);
+          images.push(url);
+        }
+      } else if (productForm.imageFile) {
+        const url = await uploadImage(productForm.imageFile);
+        images.push(url);
+      } else if (productForm.image) {
+        images.push(productForm.image.trim());
       }
 
       await addDoc(collection(db, 'products'), {
         name: productForm.name.trim(),
         price: Number(productForm.price),
         category: productForm.category,
-        image: finalImageUrl.trim(),
+        // legacy single image kept for backwards compatibility
+        image: images[0] || '',
+        images,
         description: productForm.description.trim(),
         featured: Boolean(productForm.featured),
+        showOnHomepage: Boolean(productForm.showOnHomepage),
+        showInCarousel: Boolean(productForm.showInCarousel),
         isActive: Boolean(productForm.isActive),
         stock: 10,
         createdAt: new Date().toISOString(),
@@ -548,6 +566,19 @@ const App = () => {
       await loadProducts();
     } catch (toggleError) {
       setError(toggleError.message || 'Failed to update product visibility.');
+    }
+  };
+
+  const toggleCarousel = async (product) => {
+    clearMessages();
+    try {
+      await updateDoc(doc(db, 'products', product.id), {
+        showInCarousel: !(product.showInCarousel === true),
+        updatedAt: new Date().toISOString()
+      });
+      await loadProducts();
+    } catch (err) {
+      setError(err.message || 'Failed to update carousel flag.');
     }
   };
 
@@ -675,6 +706,7 @@ const App = () => {
           toggleVisibility={toggleVisibility}
           removeProduct={removeProduct}
           updateProduct={updateProduct}
+          toggleCarousel={toggleCarousel}
           productsLoading={productsLoading}
           loadProducts={loadProducts}
           uploadImage={uploadImage}
