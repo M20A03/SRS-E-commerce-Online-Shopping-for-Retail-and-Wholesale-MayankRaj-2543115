@@ -88,6 +88,8 @@ const Homepage = ({ onOpenCart }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const homepageProducts = useMemo(() => {
     return products.filter((p) => ['oil', 'tea', 'detergent', 'others'].includes(p.category));
@@ -100,14 +102,36 @@ const Homepage = ({ onOpenCart }) => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const visibleProducts = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     return homepageProducts.filter((p) => {
       const matchCat = activeCategory === 'all' || p.category === activeCategory;
       const text = `${p.name} ${p.description} ${p.category}`.toLowerCase();
       const matchSearch = !searchQuery || text.includes(searchQuery);
       return matchCat && matchSearch;
-    }).slice(0, 12);
+    });
   }, [activeCategory, searchQuery, homepageProducts]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(startIdx, startIdx + itemsPerPage);
+  }, [filteredProducts, currentPage, startIdx]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handlePageJump = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, searchQuery]);
 
   return (
     <div className="homepage">
@@ -204,16 +228,34 @@ const Homepage = ({ onOpenCart }) => {
               ))}
             </div>
           ) : visibleProducts.length > 0 ? (
-            <div className="grid grid-cols-4 gap-8">
-              {visibleProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onQuickView={setQuickViewProduct}
-                  onAddToCartFly={addToCart}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-4 gap-8">
+                {visibleProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onQuickView={setQuickViewProduct}
+                    onAddToCartFly={addToCart}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '40px', flexWrap: 'wrap' }}>
+                  <button className="btn btn-soft" onClick={handlePrevPage} disabled={currentPage === 1} style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}>
+                    ← Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button key={page} onClick={() => handlePageJump(page)} className={currentPage === page ? 'btn btn-primary' : 'btn btn-soft'} style={{ minWidth: '36px', padding: '8px 12px' }}>
+                      {page}
+                    </button>
+                  ))}
+                  <button className="btn btn-soft" onClick={handleNextPage} disabled={currentPage === totalPages} style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}>
+                    Next →
+                  </button>
+                  <span className="text-muted" style={{ marginLeft: '16px', fontSize: '14px' }}>Page {currentPage} of {totalPages}</span>
+                </div>
+              )}
+            </>
           ) : (
              <div className="text-center section text-muted">
                <h3 className="heading-3">No products found</h3>

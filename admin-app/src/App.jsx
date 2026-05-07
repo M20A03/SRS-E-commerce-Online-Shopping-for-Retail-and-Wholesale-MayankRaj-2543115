@@ -142,6 +142,57 @@ const App = () => {
       reader.readAsDataURL(file);
     });
 
+    const estimateDataUrlBytes = (dataUrl) => {
+      const base64 = String(dataUrl || '').split(',')[1] || '';
+      return Math.floor((base64.length * 3) / 4);
+    };
+
+    const optimizeImageForFirestore = async () => {
+      // Keep stored data small enough to avoid Firestore document size limit.
+      const MAX_DIMENSION = 1280;
+      const TARGET_MAX_BYTES = 350 * 1024;
+
+      if (!file.type.startsWith('image/')) {
+        return fileToDataUrl();
+      }
+
+      const imageSrc = await fileToDataUrl();
+
+      const img = await new Promise((resolve, reject) => {
+        const instance = new Image();
+        instance.onload = () => resolve(instance);
+        instance.onerror = () => reject(new Error('Unable to process image file.'));
+        instance.src = imageSrc;
+      });
+
+      const ratio = Math.min(1, MAX_DIMENSION / Math.max(img.width || 1, img.height || 1));
+      const width = Math.max(1, Math.round((img.width || 1) * ratio));
+      const height = Math.max(1, Math.round((img.height || 1) * ratio));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        return imageSrc;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      let quality = mimeType === 'image/png' ? undefined : 0.86;
+      let output = canvas.toDataURL(mimeType, quality);
+
+      // For jpeg/webp-like files, reduce quality until near target size.
+      while (mimeType !== 'image/png' && estimateDataUrlBytes(output) > TARGET_MAX_BYTES && quality > 0.45) {
+        quality -= 0.08;
+        output = canvas.toDataURL(mimeType, quality);
+      }
+
+      return output;
+    };
+
     try {
       const gcsUploadEndpoint = import.meta.env.VITE_GCS_UPLOAD_ENDPOINT;
       const gcsProxyEndpoint = import.meta.env.VITE_GCS_UPLOAD_PROXY_ENDPOINT;
@@ -208,9 +259,12 @@ const App = () => {
         return data.secure_url;
       }
 
-      // No cloud service configured: embed a small image directly as a data URL.
-      // This works without Storage/Billing, but keep images small because Firestore docs are limited.
-      const dataUrl = await fileToDataUrl();
+      // No cloud service configured: embed a compressed image directly as a data URL.
+      // This works without Storage/Billing, but documents still have size limits.
+      const dataUrl = await optimizeImageForFirestore();
+      if (estimateDataUrlBytes(dataUrl) > 700 * 1024) {
+        throw new Error('Image is too large. Please use a smaller image (recommended under 1 MB) or a URL upload.');
+      }
       return dataUrl;
     } catch (uploadError) {
       throw new Error(uploadError.message || 'Image upload failed.');
