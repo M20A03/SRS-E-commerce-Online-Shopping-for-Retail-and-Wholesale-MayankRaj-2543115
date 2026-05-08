@@ -29,15 +29,19 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
     const handleAddToCart = (e) => {
         e.preventDefault();
+        console.log('🛒 ProductCard - handleAddToCart called', { product: product.id, user: user?.email || 'NOT LOGGED IN' });
         
         // Check if user is logged in
         if (!user) {
+            console.log('❌ No user logged in, redirecting to register');
             // Redirect to signup page
             navigate('/register', { state: { from: 'cart', product: product.id } });
             return;
         }
         
+        console.log('✅ User logged in, adding to cart:', product.id);
         addToCart(product);
+        console.log('✅ Added to cart, calling onAddToCartFly');
         if (typeof onAddToCartFly === 'function') {
             onAddToCartFly(product, actionButtonRef.current?.getBoundingClientRect());
         }

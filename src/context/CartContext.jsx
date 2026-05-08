@@ -15,15 +15,18 @@ export const CartProvider = ({ children }) => {
     }, [cart]);
 
     const addToCart = (product, quantity = 1) => {
+        console.log('🛒 CartContext.addToCart called', { productId: product.id, productName: product.title, quantity });
         setCart(prevCart => {
             const existingItem = prevCart.find(item => item.id === product.id);
             if (existingItem) {
+                console.log('📝 Item already in cart, updating quantity');
                 return prevCart.map(item =>
                     item.id === product.id
                         ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
             }
+            console.log('✨ Adding new item to cart');
             return [...prevCart, { ...product, quantity }];
         });
     };
