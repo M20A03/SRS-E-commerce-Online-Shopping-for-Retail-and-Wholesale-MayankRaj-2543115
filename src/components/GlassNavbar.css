@@ -3,10 +3,25 @@
   top: 0;
   z-index: 40;
   width: 100%;
-  background-color: var(--bg-card);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.glass-navbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(236,72,153,0.4), transparent);
+  background-size: 200% auto;
+  animation: shimmer-border 3s linear infinite;
+  pointer-events: none;
 }
 
 .glass-navbar__inner {
@@ -36,11 +51,17 @@
   place-items: center;
   background-color: var(--text-primary);
   color: var(--bg-primary);
+  transition: transform var(--transition-spring), box-shadow var(--transition-spring);
+}
+
+.glass-navbar__brand:hover .glass-navbar__brand-mark {
+  transform: perspective(400px) rotateY(15deg) rotateX(10deg) scale(1.05);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
 [data-theme="dark"] .glass-navbar__brand-mark {
-  background-color: var(--accent-color);
-  color: #020617;
+  background: var(--gradient-accent);
+  color: #fff;
 }
 
 .glass-navbar__brand-copy {
@@ -71,18 +92,38 @@
 }
 
 .glass-navbar__link {
+  position: relative;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   transition: all var(--transition-fast);
+}
+
+.glass-navbar__link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--gradient-accent);
+  transition: width var(--transition-spring);
+  border-radius: 99px;
+  box-shadow: var(--shadow-glow);
 }
 
 .glass-navbar__link.is-active,
 .glass-navbar__link:hover {
   color: var(--text-primary);
-  background-color: var(--bg-secondary);
+  background-color: transparent;
+}
+
+.glass-navbar__link.is-active::after,
+.glass-navbar__link:hover::after {
+  width: 60%;
 }
 
 /* Actions */

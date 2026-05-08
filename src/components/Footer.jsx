@@ -6,7 +6,8 @@ import './Footer.css';
 const Footer = () => {
     return (
         <footer className="footer">
-            <div className="container">
+            <div className="footer-top-glow" aria-hidden="true" />
+            <div className="container relative-z">
                 <div className="footer-grid">
 
                     {/* Brand Info */}
@@ -59,7 +60,7 @@ const Footer = () => {
                             </li>
                             <li>
                                 <Phone size={18} className="contact-icon" />
-                                <span>9835139865</span>
+                                <span>+91 7004634675</span>
                             </li>
                             <li>
                                 <Mail size={18} className="contact-icon" />
@@ -74,7 +75,7 @@ const Footer = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; {new Date().getFullYear()} Roshan Enterprises. All rights reserved.</p>
+                    <p className="copyright-text">&copy; {new Date().getFullYear()} Roshan Enterprises. All rights reserved.</p>
                 </div>
             </div>
         </footer>

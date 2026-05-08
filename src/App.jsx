@@ -11,6 +11,7 @@ import GlassNavbar from './components/GlassNavbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
+import SparkleCanvas from './components/SparkleCanvas';
 
 // Page Components
 import Homepage from './pages/Homepage';
@@ -101,18 +102,7 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      <div className="global-atmosphere" aria-hidden="true">
-        <span className="global-atmosphere__beam global-atmosphere__beam--1" />
-        <span className="global-atmosphere__beam global-atmosphere__beam--2" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--1" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--2" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--3" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--4" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--5" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--6" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--7" />
-        <span className="global-atmosphere__spark global-atmosphere__spark--8" />
-      </div>
+      <SparkleCanvas />
 
       <GlassNavbar
         theme={theme}

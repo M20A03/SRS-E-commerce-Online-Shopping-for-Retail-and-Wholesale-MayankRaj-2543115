@@ -454,16 +454,27 @@ export default function ProductsPage({
                   </div>
                 ) : (
                   <>
-                    <div>
-                      <p><strong>{product.name}</strong></p>
-                      <p className="muted">
-                        Category: {product.category || 'others'} | Price: Rs {Number(product.price || 0).toFixed(2)}
-                        {' '}
-                        <span className="badge">{product.isActive === false ? 'Hidden' : 'Visible'}</span>
-                        {product.showInCarousel === true && (
-                          <span className="badge" style={{ marginLeft: 8, backgroundColor: 'var(--accent-color)', color: '#fff' }}>Carousel</span>
-                        )}
-                      </p>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      {(() => {
+                        const imgs = Array.isArray(product.images) && product.images.length ? product.images : (product.image ? [product.image] : []);
+                        const src = imgs[0] || '';
+                        return src ? (
+                          <img src={src} alt={product.name} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'var(--bg-secondary)', display: 'grid', placeItems: 'center', fontSize: '10px' }}>No Img</div>
+                        );
+                      })()}
+                      <div>
+                        <p><strong>{product.name}</strong></p>
+                        <p className="muted">
+                          Category: {product.category || 'others'} | Price: Rs {Number(product.price || 0).toFixed(2)}
+                          {' '}
+                          <span className="badge">{product.isActive === false ? 'Hidden' : 'Visible'}</span>
+                          {product.showInCarousel === true && (
+                            <span className="badge" style={{ marginLeft: 8, backgroundColor: 'var(--accent-color)', color: '#fff' }}>Carousel</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
                     <div className="item-actions">
                       <button className="btn btn-soft" type="button" onClick={() => startEdit(product)}>Edit</button>

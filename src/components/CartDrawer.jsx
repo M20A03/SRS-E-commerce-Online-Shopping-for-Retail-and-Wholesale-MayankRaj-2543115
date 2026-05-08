@@ -65,14 +65,15 @@ const CartDrawer = ({ isOpen, onClose }) => {
               </div>
             ) : (
               <div className="cart-drawer__items">
-                {cart.map((item) => (
+                {cart.map((item, index) => (
                   <MotionDiv
                     key={item.id}
                     className="cart-drawer__item"
                     layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.05 + 0.1, duration: 0.3, ease: 'easeOut' }}
                   >
                     <img src={item.image} alt={item.name} className="cart-drawer__thumb" loading="lazy" />
                     <div className="cart-drawer__item-body">
