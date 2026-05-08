@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap } from 'lucide-react';
+import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
@@ -267,7 +267,7 @@ const Homepage = ({ onOpenCart }) => {
                     disabled={currentPage === 1}
                     title="Previous page"
                   >
-                    <span className="pagination-btn__icon">←</span>
+                    <span className="pagination-btn__icon"><ChevronLeft size={18} /></span>
                     <span className="pagination-btn__text">Previous</span>
                   </button>
                   
@@ -291,7 +291,7 @@ const Homepage = ({ onOpenCart }) => {
                     title="Next page"
                   >
                     <span className="pagination-btn__text">Next</span>
-                    <span className="pagination-btn__icon">→</span>
+                    <span className="pagination-btn__icon"><ChevronRight size={18} /></span>
                   </button>
                   
                   <div className="pagination-info">Page {currentPage} / {totalPages}</div>

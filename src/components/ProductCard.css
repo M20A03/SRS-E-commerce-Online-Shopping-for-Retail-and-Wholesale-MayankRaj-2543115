@@ -394,6 +394,17 @@
     font-size: 0.875rem;
   }
 
+  .product-card__indicator {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  .product-card__stock-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .carousel-btn {
     width: 2rem;
@@ -437,16 +448,6 @@
 
   .product-card__image-shell {
     aspect-ratio: 1 / 1;
-  }
-}
-  .product-card__indicator {
-    width: 0.375rem;
-    height: 0.375rem;
-  }
-
-  .product-card__stock-badge {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
   }
 }
 
