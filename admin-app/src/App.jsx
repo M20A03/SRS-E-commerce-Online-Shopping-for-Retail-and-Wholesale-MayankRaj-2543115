@@ -649,7 +649,7 @@ const App = () => {
   };
 
   return (
-    <main className="shell">
+    <main className="shell" data-theme="light">
       <header className="topbar">
         <h1>Roshan Admin App</h1>
         <div className="nav-tabs">
