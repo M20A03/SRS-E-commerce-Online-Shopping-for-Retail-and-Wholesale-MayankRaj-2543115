@@ -260,19 +260,41 @@ const Homepage = ({ onOpenCart }) => {
                 ))}
               </div>
               {totalPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '40px', flexWrap: 'wrap' }}>
-                  <button className="btn btn-soft" onClick={handlePrevPage} disabled={currentPage === 1} style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}>
-                    ← Previous
+                <div className="pagination-container">
+                  <button 
+                    className="btn btn-soft pagination-btn pagination-btn--prev" 
+                    onClick={handlePrevPage} 
+                    disabled={currentPage === 1}
+                    title="Previous page"
+                  >
+                    <span className="pagination-btn__icon">←</span>
+                    <span className="pagination-btn__text">Previous</span>
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button key={page} onClick={() => handlePageJump(page)} className={currentPage === page ? 'btn btn-primary' : 'btn btn-soft'} style={{ minWidth: '36px', padding: '8px 12px' }}>
-                      {page}
-                    </button>
-                  ))}
-                  <button className="btn btn-soft" onClick={handleNextPage} disabled={currentPage === totalPages} style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}>
-                    Next →
+                  
+                  <div className="pagination-pages">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button 
+                        key={page} 
+                        onClick={() => handlePageJump(page)} 
+                        className={`pagination-page ${currentPage === page ? 'is-active' : ''}`}
+                        title={`Go to page ${page}`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <button 
+                    className="btn btn-soft pagination-btn pagination-btn--next" 
+                    onClick={handleNextPage} 
+                    disabled={currentPage === totalPages}
+                    title="Next page"
+                  >
+                    <span className="pagination-btn__text">Next</span>
+                    <span className="pagination-btn__icon">→</span>
                   </button>
-                  <span className="text-muted" style={{ marginLeft: '16px', fontSize: '14px' }}>Page {currentPage} of {totalPages}</span>
+                  
+                  <div className="pagination-info">Page {currentPage} / {totalPages}</div>
                 </div>
               )}
             </>
