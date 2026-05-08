@@ -9,7 +9,7 @@ const UPIPayment = ({ amount, customerName = 'Roshan Enterprises', onPaymentConf
   const [verificationMode, setVerificationMode] = useState('link'); // 'link' or 'manual'
 
   // Your UPI ID - Replace with your actual UPI ID
-  const UPI_ID = 'roshan.enterprises@upi'; // Change this to your actual UPI ID
+  const UPI_ID = 'mayankraj.dhn5-2@okaxis'; // Axis Bank UPI ID
   
   // Generate UPI link
   const upiLink = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(customerName)}&am=${amount}&tn=Payment%20for%20Order&tr=ORD${Math.floor(Math.random() * 1000000)}`;
