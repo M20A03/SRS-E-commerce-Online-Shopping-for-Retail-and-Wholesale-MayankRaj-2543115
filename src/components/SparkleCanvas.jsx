@@ -30,10 +30,10 @@ class Sparkle {
   pickColor() {
     const palette = [
       'rgba(99,102,241,',   // indigo
-      'rgba(236,72,153,',   // pink
+      'rgba(249,115,22,',   // warm orange
       'rgba(245,158,11,',   // amber
-      'rgba(167,139,250,',  // violet
-      'rgba(251,191,36,',   // gold
+      'rgba(167,139,250,',  // soft violet
+      'rgba(16,185,129,',   // emerald green
       'rgba(255,255,255,',  // white
     ];
     return palette[Math.floor(Math.random() * palette.length)];

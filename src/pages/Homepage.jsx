@@ -135,6 +135,14 @@ const Homepage = ({ onOpenCart }) => {
     addToCart(product);
   };
 
+  // Visual-only callback for ProductCard fly animation — ProductCard already calls addToCart internally
+  const handleCartFly = (product) => {
+    if (!user) {
+      navigate('/register', { state: { from: 'cart', product: product.id } });
+    }
+    // No addToCart here — ProductCard's own handler already did it
+  };
+
   const homepageProducts = useMemo(() => {
     return products.filter((p) => ['oil', 'tea', 'detergent', 'others'].includes(p.category) && p.showOnHomepage !== false);
   }, [products]);
@@ -324,7 +332,7 @@ const Homepage = ({ onOpenCart }) => {
                     variants={{ hidden: { opacity: 0, y: 24, scale: 0.95 }, visible: { opacity: 1, y: 0, scale: 1 } }}
                     transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <ProductCard product={product} onQuickView={setQuickViewProduct} onAddToCartFly={handleAddToCart} />
+                    <ProductCard product={product} onQuickView={setQuickViewProduct} onAddToCartFly={handleCartFly} />
                   </motion.div>
                 ))}
               </motion.div>

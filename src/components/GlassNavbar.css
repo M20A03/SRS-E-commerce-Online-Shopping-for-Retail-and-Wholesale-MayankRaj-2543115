@@ -18,7 +18,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(236,72,153,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), rgba(249,115,22,0.4), rgba(16,185,129,0.3), transparent);
   background-size: 200% auto;
   animation: shimmer-border 3s linear infinite;
   pointer-events: none;

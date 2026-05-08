@@ -37,7 +37,7 @@
 }
 
 .product-card:hover::before {
-  background: linear-gradient(135deg, rgba(99,102,241,0.7), rgba(236,72,153,0.5), rgba(245,158,11,0.5));
+  background: linear-gradient(135deg, rgba(99,102,241,0.7), rgba(249,115,22,0.6), rgba(16,185,129,0.5));
   opacity: 1;
 }
 
