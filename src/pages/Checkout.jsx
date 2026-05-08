@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import { CreditCard, Smartphone, HandCoins, CheckCircle } from 'lucide-react';
+import UPIPayment from '../components/UPIPayment';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -49,6 +50,69 @@ const Checkout = () => {
         setCustomerInfo((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleUPIPaymentConfirm = async (paymentData) => {
+        setFormError('');
+
+        if (!resolvedCustomerInfo.firstName || !resolvedCustomerInfo.lastName || !resolvedCustomerInfo.contact || !resolvedCustomerInfo.email || !resolvedCustomerInfo.shippingAddress) {
+            setFormError('Please fill all required customer and shipping details.');
+            return;
+        }
+
+        if (!acceptTerms) {
+            setFormError('Please accept terms before placing the order.');
+            return;
+        }
+
+        setIsProcessing(true);
+
+        try {
+            const now = new Date();
+            const estimatedDeliveryDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+
+            const newOrder = {
+                id: `ORD-${Math.floor(Math.random() * 1000000)}`,
+                date: now.toISOString(),
+                updatedAt: now.toISOString(),
+                estimatedDeliveryDate,
+                estimatedDeliveryDaysMin: 2,
+                estimatedDeliveryDaysMax: 4,
+                items: [...cart],
+                subtotal,
+                shippingFee,
+                tax,
+                total: finalTotal,
+                status: 'Pending Payment Verification',
+                paymentMethod: 'upi',
+                paymentStatus: 'Pending (UPI Payment)',
+                paymentData: {
+                    upiId: paymentData.upiId,
+                    transactionId: paymentData.transactionId,
+                    timestamp: paymentData.timestamp
+                },
+                customer: resolvedCustomerInfo
+            };
+
+            if (user?.id) {
+                await addDoc(collection(db, 'orders'), {
+                    ...newOrder,
+                    userId: user.id,
+                    userEmail: user.email || ''
+                });
+            } else {
+                const existingOrders = JSON.parse(localStorage.getItem('luxe_orders') || '[]');
+                const orderOwner = `guest:${resolvedCustomerInfo.email}`;
+                localStorage.setItem('luxe_orders', JSON.stringify([[orderOwner, newOrder], ...existingOrders]));
+            }
+
+            setOrderComplete(true);
+            clearCart();
+        } catch (error) {
+            setFormError(error.message || 'Failed to process UPI payment. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     const handleCheckout = async (e) => {
         e.preventDefault();
         setFormError('');
@@ -67,8 +131,9 @@ const Checkout = () => {
 
         try {
             const isCashOnDelivery = paymentMethod === 'cod';
-            const paymentStatus = isCashOnDelivery ? 'Pending (Cash on Delivery)' : 'Paid';
-            const orderStatus = isCashOnDelivery ? 'Confirmed' : 'Processing';
+            const isUPI = paymentMethod === 'upi';
+            const paymentStatus = isCashOnDelivery ? 'Pending (Cash on Delivery)' : isUPI ? 'Pending (UPI Payment)' : 'Pending';
+            const orderStatus = isCashOnDelivery ? 'Confirmed' : isUPI ? 'Pending Payment Verification' : 'Processing';
             const now = new Date();
             const estimatedDeliveryDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -116,10 +181,14 @@ const Checkout = () => {
         return (
             <div className="container section flex-col items-center justify-center animate-fade-in" style={{ minHeight: '60vh', textAlign: 'center' }}>
                 <CheckCircle size={80} color="#22c55e" style={{ marginBottom: '2rem' }} />
-                <h1 className="heading-1 mb-4">{paymentMethod === 'cod' ? 'Order Placed!' : 'Payment Successful!'}</h1>
+                <h1 className="heading-1 mb-4">
+                    {paymentMethod === 'cod' ? 'Order Placed!' : paymentMethod === 'upi' ? 'Payment Submitted!' : 'Payment Successful!'}
+                </h1>
                 <p className="text-muted" style={{ fontSize: '1.1rem', marginBottom: '2rem', maxWidth: '500px' }}>
                     {paymentMethod === 'cod'
                         ? 'Your order is confirmed with Cash on Delivery. We will contact you and share shipping updates shortly.'
+                        : paymentMethod === 'upi'
+                        ? 'Your UPI payment has been submitted. We are verifying the transaction. You will receive a confirmation email shortly.'
                         : 'Thank you for your order. We are processing it now and will email you with shipping details shortly.'}
                 </p>
                 {user ? (
@@ -245,13 +314,11 @@ const Checkout = () => {
 
                         {paymentMethod === 'upi' && (
                             <div className="payment-form animate-fade-in">
-                                <div className="mt-4">
-                                    <label className="label">UPI ID</label>
-                                    <input type="text" className="input" placeholder="username@bank" />
-                                </div>
-                                <p className="text-muted mt-2" style={{ fontSize: '0.85rem' }}>
-                                    A payment request will be sent to your UPI app.
-                                </p>
+                                <UPIPayment 
+                                    amount={finalTotal} 
+                                    customerName={`${resolvedCustomerInfo.firstName} ${resolvedCustomerInfo.lastName}`}
+                                    onPaymentConfirm={handleUPIPaymentConfirm}
+                                />
                             </div>
                         )}
 
@@ -312,15 +379,17 @@ const Checkout = () => {
 
                         {formError && <p className="checkout-error">{formError}</p>}
 
-                        <button
-                            className="btn btn-primary btn-checkout"
-                            onClick={handleCheckout}
-                            disabled={isProcessing}
-                        >
-                            {isProcessing
-                                ? (paymentMethod === 'cod' ? 'Placing Order...' : 'Processing Payment...')
-                                : (paymentMethod === 'cod' ? 'Place Order (COD)' : `Pay ₹${finalTotal.toFixed(2)}`)}
-                        </button>
+                        {paymentMethod !== 'upi' && (
+                            <button
+                                className="btn btn-primary btn-checkout"
+                                onClick={handleCheckout}
+                                disabled={isProcessing}
+                            >
+                                {isProcessing
+                                    ? (paymentMethod === 'cod' ? 'Placing Order...' : 'Processing Payment...')
+                                    : (paymentMethod === 'cod' ? 'Place Order (COD)' : `Pay ₹${finalTotal.toFixed(2)}`)}
+                            </button>
+                        )}
                         <p className="text-center text-muted mt-4" style={{ fontSize: '0.8rem' }}>
                             Your payment information is handled securely.
                         </p>
