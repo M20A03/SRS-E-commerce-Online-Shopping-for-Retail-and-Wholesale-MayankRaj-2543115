@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import './Homepage.css';
@@ -87,7 +88,9 @@ const HeroSlider = ({ products, onAddToCart }) => {
 
 /* ─── Main Homepage ─── */
 const Homepage = ({ onOpenCart }) => {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const { products, categories, isLoading: isProductsLoading } = useProducts();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,6 +98,16 @@ const Homepage = ({ onOpenCart }) => {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  // Handle add to cart with authentication check
+  const handleAddToCart = (product) => {
+    if (!user) {
+      // Redirect to signup if not logged in
+      navigate('/register', { state: { from: 'cart', product: product.id } });
+      return;
+    }
+    addToCart(product);
+  };
 
   const homepageProducts = useMemo(() => {
      return products.filter((p) => ['oil', 'tea', 'detergent', 'others'].includes(p.category) && p.showOnHomepage !== false);
@@ -161,7 +174,7 @@ const Homepage = ({ onOpenCart }) => {
               </div>
             </div>
             <div className="homepage__hero-visual">
-              <HeroSlider products={carouselProducts.length > 0 ? carouselProducts : (featuredProducts.length > 0 ? featuredProducts : homepageProducts.slice(0, 4))} onAddToCart={addToCart} />
+              <HeroSlider products={carouselProducts.length > 0 ? carouselProducts : (featuredProducts.length > 0 ? featuredProducts : homepageProducts.slice(0, 4))} onAddToCart={handleAddToCart} />
             </div>
           </div>
         </div>
@@ -242,7 +255,7 @@ const Homepage = ({ onOpenCart }) => {
                     key={product.id}
                     product={product}
                     onQuickView={setQuickViewProduct}
-                    onAddToCartFly={addToCart}
+                    onAddToCartFly={handleAddToCart}
                   />
                 ))}
               </div>
@@ -299,7 +312,7 @@ const Homepage = ({ onOpenCart }) => {
                   <h2 className="heading-2">{quickViewProduct.name}</h2>
                   <p className="text-muted quickview-desc">{quickViewProduct.description}</p>
                   <p className="quickview-price heading-1">₹{quickViewProduct.price?.toFixed(2)}</p>
-                  <button className="btn btn-primary w-full" onClick={() => { addToCart(quickViewProduct); setQuickViewProduct(null); }}>
+                  <button className="btn btn-primary w-full" onClick={() => { handleAddToCart(quickViewProduct); setQuickViewProduct(null); }}>
                     Add to Cart
                   </button>
                 </div>

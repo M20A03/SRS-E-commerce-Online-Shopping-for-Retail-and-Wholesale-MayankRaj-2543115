@@ -1,11 +1,15 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, ShoppingCart, Sparkles, TriangleAlert } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
+    const navigate = useNavigate();
     const { addToCart } = useCart();
+    const { user } = useAuth();
     const cardRef = useRef(null);
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -25,6 +29,14 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
     const handleAddToCart = (e) => {
         e.preventDefault();
+        
+        // Check if user is logged in
+        if (!user) {
+            // Redirect to signup page
+            navigate('/register', { state: { from: 'cart', product: product.id } });
+            return;
+        }
+        
         addToCart(product);
         if (typeof onAddToCartFly === 'function') {
             onAddToCartFly(product, actionButtonRef.current?.getBoundingClientRect());
