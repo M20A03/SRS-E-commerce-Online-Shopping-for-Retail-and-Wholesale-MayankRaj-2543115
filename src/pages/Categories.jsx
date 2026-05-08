@@ -22,7 +22,7 @@ const Categories = () => {
             return products;
         }
         return products.filter(p => p.category === activeCategory);
-    }, [activeCategory]);
+    }, [activeCategory, products]);
 
     const visibleProducts = useMemo(() => {
             let next = filteredProducts.filter((product) => {

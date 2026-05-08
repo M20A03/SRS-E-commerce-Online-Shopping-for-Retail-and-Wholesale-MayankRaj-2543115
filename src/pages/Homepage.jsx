@@ -262,7 +262,7 @@ const Homepage = ({ onOpenCart }) => {
               {totalPages > 1 && (
                 <div className="pagination-container">
                   <button 
-                    className="btn btn-soft pagination-btn pagination-btn--prev" 
+                    className="btn btn-outline pagination-btn pagination-btn--prev" 
                     onClick={handlePrevPage} 
                     disabled={currentPage === 1}
                     title="Previous page"
@@ -285,7 +285,7 @@ const Homepage = ({ onOpenCart }) => {
                   </div>
                   
                   <button 
-                    className="btn btn-soft pagination-btn pagination-btn--next" 
+                    className="btn btn-outline pagination-btn pagination-btn--next" 
                     onClick={handleNextPage} 
                     disabled={currentPage === totalPages}
                     title="Next page"

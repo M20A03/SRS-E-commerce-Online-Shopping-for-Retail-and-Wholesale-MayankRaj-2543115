@@ -545,6 +545,10 @@
     min-width: 0;
   }
 
+  .glass-navbar__brand-copy {
+    display: none;
+  }
+
   .glass-navbar__brand-mark {
     width: 1.875rem;
     height: 1.875rem;

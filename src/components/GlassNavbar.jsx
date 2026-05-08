@@ -280,7 +280,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
               </>
             ) : (
               <MagneticButton
-                className="glass-button--primary"
+                className="glass-button--soft glass-navbar__icon-button"
                 ariaLabel="Open sign in dialog"
                 onClick={() => {
                   setAuthMode('login');
@@ -288,7 +288,6 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                 }}
               >
                 <User size={17} />
-                Sign in
               </MagneticButton>
             )}
 
@@ -334,14 +333,13 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                 ) : (
                   <button
                     type="button"
-                    className="glass-button glass-button--primary glass-navbar__mobile-action"
+                    className="glass-button glass-button--soft glass-navbar__mobile-action"
                     onClick={() => {
                       setAuthMode('login');
                       setAuthOpen(true);
                     }}
                   >
                     <User size={16} />
-                    Sign in
                   </button>
                 )}
               </div>
