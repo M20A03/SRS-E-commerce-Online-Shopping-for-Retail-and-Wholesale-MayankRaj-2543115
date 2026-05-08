@@ -2,7 +2,7 @@ import React from 'react';
 import './InfoPages.css';
 
 const ContactUs = () => {
-  const mapUrl = 'https://www.google.com/maps?q=Dhanbad,+Jharkhand&output=embed';
+  const mapUrl = 'https://www.google.com/maps?q=23.84500,86.43258&output=embed';
 
   return (
     <div className="info-page info-page--contact animate-fade-in">
@@ -15,7 +15,7 @@ const ContactUs = () => {
         <div className="info-grid">
           <article className="info-card">
             <h3>Phone Support</h3>
-            <p>9835139865</p>
+            <p>+91 7004634675</p>
             <p>Mon - Sat, 9:00 AM to 8:00 PM</p>
           </article>
           <article className="info-card">
@@ -25,8 +25,8 @@ const ContactUs = () => {
           </article>
           <article className="info-card">
             <h3>Store Address</h3>
-            <p>Dhanbad, Jharkhand</p>
-            <p>India</p>
+            <p>RCVG+6G, Satyam Nagar</p>
+            <p>Dhanbad, Jharkhand 826010</p>
           </article>
         </div>
 

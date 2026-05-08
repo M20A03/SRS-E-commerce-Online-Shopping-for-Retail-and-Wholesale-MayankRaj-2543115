@@ -56,6 +56,13 @@ const About = () => {
               We deliver value through consistency, clarity, and quality in every order.
             </p>
           </section>
+          <section className="info-section">
+            <h2>Visit Us</h2>
+            <p>
+              <strong>Address:</strong> RCVG+6G, Satyam Nagar, Dhanbad, Jharkhand 826010<br />
+              <strong>Phone:</strong> +91 7004634675
+            </p>
+          </section>
         </div>
       </div>
     </div>
