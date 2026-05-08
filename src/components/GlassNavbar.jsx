@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chrome, ChevronRight, LogOut, Menu, Moon, Phone, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
+import { Chrome, ChevronRight, LogOut, Menu, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './GlassNavbar.css';
@@ -60,15 +60,12 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
 
 const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const { getCartCount } = useCart();
-  const { user, login, register, loginWithGoogle, sendPhoneOtp, verifyPhoneOtp, logout } = useAuth();
+  const { user, login, register, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
-  const [phoneInput, setPhoneInput] = useState('');
-  const [otpInput, setOtpInput] = useState('');
-  const [otpSession, setOtpSession] = useState(null);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [authForm, setAuthForm] = useState({
@@ -76,6 +73,9 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     email: '',
     password: ''
   });
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
 
   const cartCount = getCartCount();
   const currentDomain = typeof window !== 'undefined' ? window.location.host : '';
@@ -92,9 +92,9 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   useEffect(() => {
     setMobileOpen(false);
     setAuthOpen(false);
-    setOtpSession(null);
+    setOtpMode(false);
+    setOtpSent(false);
     setOtpInput('');
-    setPhoneInput('');
   }, [location.pathname]);
 
   useEffect(() => {
@@ -169,43 +169,42 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     }
   };
 
-  const handleSendOtp = async () => {
+  const handleSendEmailOtp = async () => {
+    const email = authForm.email.trim();
+    if (!email) {
+      setAuthError('Please enter your email first');
+      return;
+    }
     setAuthError('');
     setAuthLoading(true);
-
-    try {
-      const result = await sendPhoneOtp(phoneInput, 'recaptcha-container');
-      if (result.success) {
-        setOtpSession(result.confirmationResult);
-      } else {
-        setAuthError(result.error || 'Unable to send OTP');
-      }
-    } finally {
-      setAuthLoading(false);
+    const res = await sendEmailOtp(email);
+    if (res.success) {
+      setOtpSent(true);
+    } else {
+      setAuthError(res.error);
     }
+    setAuthLoading(false);
   };
 
-  const handleVerifyOtp = async () => {
+  const handleVerifyEmailOtp = async () => {
+    if (!otpInput) {
+      setAuthError('Please enter the code');
+      return;
+    }
     setAuthError('');
     setAuthLoading(true);
-
-    try {
-      const profileData = authMode === 'register' ? { displayName: authForm.displayName.trim() } : {};
-      const result = await verifyPhoneOtp(otpSession, otpInput, profileData);
-
-      if (result.success) {
-        setAuthOpen(false);
-        setOtpSession(null);
-        setOtpInput('');
-        setPhoneInput('');
-        navigate('/');
-      } else {
-        setAuthError(result.error || 'Invalid OTP');
-      }
-    } finally {
-      setAuthLoading(false);
+    const res = await verifyEmailOtp(authForm.email.trim(), otpInput);
+    if (res.success) {
+      setAuthOpen(false);
+      navigate('/');
+    } else {
+      setAuthError(res.error);
     }
+    setAuthLoading(false);
   };
+
+
+
 
   return (
     <>
@@ -368,7 +367,10 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
               <div className="glass-navbar__modal-top">
                 <div>
                   <h2 className="glass-navbar__modal-title">{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
-                  <p className="glass-navbar__modal-copy">Sign in securely to continue shopping premium daily essentials.</p>
+                  <p className="glass-navbar__modal-copy">
+                    Sign in securely to continue shopping premium daily essentials.
+                    <Link to="/auth-info" className="glass-navbar__info-link" style={{ marginLeft: '0.5rem', textDecoration: 'underline', opacity: 0.8 }}>How it works?</Link>
+                  </p>
                 </div>
                 <MagneticButton className="glass-button--soft glass-navbar__icon-button" ariaLabel="Close dialog" onClick={() => setAuthOpen(false)}>
                   <X size={18} />
@@ -400,102 +402,109 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
 
               <div className="glass-navbar__divider" aria-hidden="true">or</div>
 
-              <form className="glass-navbar__form" onSubmit={handleAuthSubmit}>
-                {authMode === 'register' && (
-                  <div className="glass-navbar__field-group">
+              <div className="glass-navbar__form">
+                {!otpMode ? (
+                  <form onSubmit={handleAuthSubmit}>
+                    {authMode === 'register' && (
+                      <div className="glass-navbar__field-group">
+                        <label className="glass-navbar__field">
+                          <span className="glass-navbar__label">Full name</span>
+                          <input
+                            className="glass-navbar__input"
+                            type="text"
+                            value={authForm.displayName}
+                            onChange={(event) => setAuthForm((previous) => ({ ...previous, displayName: event.target.value }))}
+                            placeholder="Enter your name"
+                            required
+                          />
+                        </label>
+                      </div>
+                    )}
+
                     <label className="glass-navbar__field">
-                      <span className="glass-navbar__label">Full name</span>
+                      <span className="glass-navbar__label">Email</span>
                       <input
                         className="glass-navbar__input"
-                        type="text"
-                        value={authForm.displayName}
-                        onChange={(event) => setAuthForm((previous) => ({ ...previous, displayName: event.target.value }))}
-                        placeholder="Enter your name"
+                        type="email"
+                        value={authForm.email}
+                        onChange={(event) => setAuthForm((previous) => ({ ...previous, email: event.target.value }))}
+                        placeholder="you@example.com"
                         required
                       />
                     </label>
-                    <div className="glass-navbar__field" />
-                  </div>
-                )}
 
-                <label className="glass-navbar__field">
-                  <span className="glass-navbar__label">Email</span>
-                  <input
-                    className="glass-navbar__input"
-                    type="email"
-                    value={authForm.email}
-                    onChange={(event) => setAuthForm((previous) => ({ ...previous, email: event.target.value }))}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </label>
-
-                <label className="glass-navbar__field">
-                  <span className="glass-navbar__label">Password</span>
-                  <input
-                    className="glass-navbar__input"
-                    type="password"
-                    value={authForm.password}
-                    onChange={(event) => setAuthForm((previous) => ({ ...previous, password: event.target.value }))}
-                    placeholder="Enter password"
-                    required
-                  />
-                </label>
-
-                <p className="glass-navbar__hint">
-                  By continuing, you agree to our terms and privacy policy.
-                </p>
-
-                <button type="submit" className="glass-button glass-button--primary" disabled={authLoading}>
-                  {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign in' : 'Create account'}
-                </button>
-              </form>
-
-              <div className="glass-navbar__divider" aria-hidden="true">or sign in with phone</div>
-
-              <div className="glass-navbar__form glass-navbar__phone-auth">
-                <label className="glass-navbar__field">
-                  <span className="glass-navbar__label">Phone number (E.164 format)</span>
-                  <div className="glass-navbar__phone-row">
-                    <input
-                      className="glass-navbar__input"
-                      type="tel"
-                      value={phoneInput}
-                      onChange={(event) => setPhoneInput(event.target.value)}
-                      placeholder="+919876543210"
-                      disabled={authLoading}
-                    />
-                    <button type="button" className="glass-button glass-button--soft" onClick={handleSendOtp} disabled={authLoading || !phoneInput.trim()}>
-                      <Phone size={16} />
-                      Send OTP
-                    </button>
-                  </div>
-                </label>
-
-                {otpSession && (
-                  <>
                     <label className="glass-navbar__field">
-                      <span className="glass-navbar__label">Enter OTP</span>
+                      <span className="glass-navbar__label">Password</span>
                       <input
                         className="glass-navbar__input"
-                        type="text"
-                        inputMode="numeric"
-                        value={otpInput}
-                        onChange={(event) => setOtpInput(event.target.value.replace(/[^0-9]/g, ''))}
-                        placeholder="6-digit OTP"
-                        maxLength={6}
-                        disabled={authLoading}
+                        type="password"
+                        value={authForm.password}
+                        onChange={(event) => setAuthForm((previous) => ({ ...previous, password: event.target.value }))}
+                        placeholder="Enter password"
+                        required
                       />
                     </label>
 
-                    <button type="button" className="glass-button glass-button--primary" onClick={handleVerifyOtp} disabled={authLoading || otpInput.trim().length !== 6}>
-                      Verify OTP
-                    </button>
-                  </>
-                )}
+                    <p className="glass-navbar__hint">
+                      By continuing, you agree to our terms and privacy policy.
+                    </p>
 
-                <div id="recaptcha-container" className="glass-navbar__recaptcha" />
+                    <div className="glass-navbar__auth-buttons">
+                      <button type="submit" className="glass-button glass-button--primary" disabled={authLoading}>
+                        {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign in' : 'Create account'}
+                      </button>
+                      <button type="button" className="glass-button glass-button--soft" onClick={() => setOtpMode(true)}>
+                        Sign in with Code (OTP)
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="glass-navbar__otp-flow">
+                    <label className="glass-navbar__field">
+                      <span className="glass-navbar__label">Email</span>
+                      <input
+                        className="glass-navbar__input"
+                        type="email"
+                        value={authForm.email}
+                        onChange={(event) => setAuthForm((previous) => ({ ...previous, email: event.target.value }))}
+                        placeholder="you@example.com"
+                        disabled={otpSent}
+                      />
+                    </label>
+
+                    {otpSent ? (
+                      <>
+                        <label className="glass-navbar__field">
+                          <span className="glass-navbar__label">Enter Code</span>
+                          <input
+                            className="glass-navbar__input"
+                            type="text"
+                            value={otpInput}
+                            onChange={(e) => setOtpInput(e.target.value)}
+                            placeholder="6-digit code"
+                          />
+                        </label>
+                        <button type="button" className="glass-button glass-button--primary" onClick={handleVerifyEmailOtp} disabled={authLoading}>
+                          Verify & Sign In
+                        </button>
+                        <button type="button" className="glass-button glass-button--ghost" onClick={() => setOtpSent(false)}>
+                          Change Email
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" className="glass-button glass-button--primary" onClick={handleSendEmailOtp} disabled={authLoading}>
+                        Send Login Code
+                      </button>
+                    )}
+                    <button type="button" className="glass-button glass-button--ghost" onClick={() => setOtpMode(false)}>
+                      Back to Password login
+                    </button>
+                  </div>
+                )}
               </div>
+
+
+
             </MotionDiv>
           </MotionDiv>
         )}

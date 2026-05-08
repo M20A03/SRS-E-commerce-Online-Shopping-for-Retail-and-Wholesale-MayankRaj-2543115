@@ -4,12 +4,24 @@ import { db } from '../firebase-config';
 import { categories as defaultCategories, products as fallbackProducts } from '../data/mockData';
 
 const useProducts = () => {
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState(() => {
+    const cached = localStorage.getItem('products_cache');
+    if (cached) {
+      try {
+        const { data, timestamp } = JSON.parse(cached);
+        // If cache is less than 30 minutes old, use it as initial state
+        if (Date.now() - timestamp < 30 * 60 * 1000) {
+          return data;
+        }
+      } catch (e) {
+        console.error('Failed to parse products cache', e);
+      }
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState(products.length === 0);
 
   useEffect(() => {
-    setIsLoading(true);
-
     const unsubscribe = onSnapshot(
       collection(db, 'products'),
       (snapshot) => {
@@ -21,15 +33,23 @@ const useProducts = () => {
             ...docItem.data()
           }));
           setProducts(firestoreProducts);
+          // Update cache
+          localStorage.setItem('products_cache', JSON.stringify({
+            data: firestoreProducts,
+            timestamp: Date.now()
+          }));
         }
         setIsLoading(false);
       },
       (error) => {
         console.error('Error loading products:', error);
-        setProducts(fallbackProducts);
+        if (products.length === 0) {
+          setProducts(fallbackProducts);
+        }
         setIsLoading(false);
       }
     );
+
 
     return () => unsubscribe();
   }, []);

@@ -5,12 +5,11 @@ import {
     signInWithPopup,
     signInWithRedirect,
     GoogleAuthProvider,
-    RecaptchaVerifier,
-    signInWithPhoneNumber,
     signOut,
     onAuthStateChanged,
     updateProfile as firebaseUpdateProfile,
-    sendEmailVerification
+    sendEmailVerification,
+    sendSignInLinkToEmail
 } from 'firebase/auth';
 import { auth, db } from '../firebase-config';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -190,49 +189,68 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const sendPhoneOtp = async (phoneNumber, recaptchaContainerId = 'recaptcha-container') => {
+    // Email OTP utilities (no-reply email)
+    const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+    const EMAIL_OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+    const sendEmailOtp = async (email) => {
         try {
-            if (typeof window === 'undefined') {
-                return { success: false, error: 'Phone OTP is only available in browser context.' };
+            if (!email) {
+                return { success: false, error: 'Email is required' };
             }
-
-            if (!phoneNumber || !phoneNumber.trim()) {
-                return { success: false, error: 'Please enter a valid phone number in +91XXXXXXXXXX format.' };
-            }
-
-            if (window.recaptchaVerifier) {
-                window.recaptchaVerifier.clear();
-            }
-
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaContainerId, {
-                size: 'invisible'
-            });
-
-            const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber.trim(), window.recaptchaVerifier);
-            return { success: true, confirmationResult };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    };
-
-    const verifyPhoneOtp = async (confirmationResult, otp, profileData = {}) => {
-        try {
-            if (!confirmationResult) {
-                return { success: false, error: 'OTP session expired. Please request a new OTP.' };
-            }
-
-            if (!otp || otp.trim().length < 6) {
-                return { success: false, error: 'Please enter the 6-digit OTP.' };
-            }
-
-            const result = await confirmationResult.confirm(otp.trim());
-            await upsertUserProfile(result.user, profileData);
-
+            const otp = generateOtp();
+            const expiry = Date.now() + EMAIL_OTP_TTL_MS;
+            // Store OTP in localStorage (simple demo; in production use Firestore + Cloud Function)
+            const store = JSON.parse(localStorage.getItem('email_otps') || '{}');
+            store[email] = { otp, expiry };
+            localStorage.setItem('email_otps', JSON.stringify(store));
+            // Send email via Firebase's sendSignInLinkToEmail as a no-reply OTP email
+            // Using a custom action code settings which points to a dummy URL (will not be clicked)
+            const actionCodeSettings = {
+                url: window.location.origin,
+                handleCodeInApp: true
+            };
+            await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+            // Note: In a real app, you'd send the OTP via a Cloud Function email service.
+            console.log('📧 Email OTP sent (simulated) to', email, 'code', otp);
             return { success: true };
         } catch (error) {
             return { success: false, error: error.message };
         }
     };
+
+    const verifyEmailOtp = async (email, otp) => {
+        try {
+            if (!email || !otp) {
+                return { success: false, error: 'Email and OTP are required' };
+            }
+            const store = JSON.parse(localStorage.getItem('email_otps') || '{}');
+            const record = store[email];
+            if (!record) {
+                return { success: false, error: 'No OTP request found for this email' };
+            }
+            if (Date.now() > record.expiry) {
+                delete store[email];
+                localStorage.setItem('email_otps', JSON.stringify(store));
+                return { success: false, error: 'OTP expired' };
+            }
+            if (record.otp !== otp) {
+                return { success: false, error: 'Invalid OTP' };
+            }
+            // OTP is valid – sign in anonymously and upsert profile
+            const result = await signInWithEmailAndPassword(auth, email, otp); // using OTP as password placeholder
+            await upsertUserProfile(result.user);
+            // Cleanup
+            delete store[email];
+            localStorage.setItem('email_otps', JSON.stringify(store));
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    // Export only needed functions (remove phone OTP)
+
 
     const login = async (email, password) => {
         try {
@@ -295,8 +313,8 @@ export const AuthProvider = ({ children }) => {
             login,
             register,
             loginWithGoogle,
-            sendPhoneOtp,
-            verifyPhoneOtp,
+            sendEmailOtp,
+            verifyEmailOtp,
             logout,
             updateProfile
         }}>

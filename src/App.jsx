@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -12,23 +12,27 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
 import SparkleCanvas from './components/SparkleCanvas';
+import { ToastProvider } from './context/ToastContext';
+import ToastContainer from './components/ToastContainer';
 
-// Page Components
-import Homepage from './pages/Homepage';
-import Categories from './pages/Categories';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Account from './pages/Account';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import OrderHistory from './pages/OrderHistory';
-import About from './pages/About';
-import ContactUs from './pages/ContactUs';
-import FAQ from './pages/FAQ';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import ShippingPolicy from './pages/ShippingPolicy';
-import ReturnPolicy from './pages/ReturnPolicy';
+const AuthInfo = lazy(() => import('./pages/AuthInfo'));
+
+const Homepage = lazy(() => import('./pages/Homepage'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Account = lazy(() => import('./pages/Account'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderHistory = lazy(() => import('./pages/OrderHistory'));
+const About = lazy(() => import('./pages/About'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
+const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
+
 
 const AppContent = () => {
   const [theme, setTheme] = useState(() => {
@@ -114,7 +118,7 @@ const AppContent = () => {
       />
 
       <main className="main-content">
-        <AnimatePresence mode="wait">
+        <Suspense fallback={<div className="spinner">Loading...</div>}>
           <MotionDiv
             key={location.pathname}
             className="route-transition-shell"
@@ -126,6 +130,7 @@ const AppContent = () => {
             <Routes location={location}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/auth-info" element={<AuthInfo />} />
 
               <Route
                 path="/"
@@ -159,11 +164,12 @@ const AppContent = () => {
               <Route path="/return-policy" element={<ReturnPolicy />} />
             </Routes>
           </MotionDiv>
-        </AnimatePresence>
+        </Suspense>
       </main>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <Footer />
+      <ToastContainer />
     </div>
   );
 };
@@ -171,11 +177,13 @@ const AppContent = () => {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </CartProvider>
+      <ToastProvider>
+        <CartProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </CartProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }
