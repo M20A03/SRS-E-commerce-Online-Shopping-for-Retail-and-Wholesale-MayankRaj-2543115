@@ -128,18 +128,11 @@ const Homepage = ({ onOpenCart }) => {
   const itemsPerPage = 12;
 
   const handleAddToCart = (product) => {
-    if (!user) {
-      navigate('/register', { state: { from: 'cart', product: product.id } });
-      return;
-    }
     addToCart(product);
   };
 
   // Visual-only callback for ProductCard fly animation — ProductCard already calls addToCart internally
   const handleCartFly = (product) => {
-    if (!user) {
-      navigate('/register', { state: { from: 'cart', product: product.id } });
-    }
     // No addToCart here — ProductCard's own handler already did it
   };
 
