@@ -48,8 +48,6 @@ const OrderHistory = () => {
         return () => unsubscribe();
     }, [user]);
 
-    if (!user) return null;
-
     const filteredOrders = useMemo(() => {
         if (statusFilter === 'all') {
             return orders;
@@ -57,6 +55,8 @@ const OrderHistory = () => {
 
         return orders.filter((item) => (item.status || '').toLowerCase() === statusFilter);
     }, [orders, statusFilter]);
+
+    if (!user) return null;
 
     const getTrackingSteps = (status = '') => {
         const normalized = status.toLowerCase();
@@ -82,6 +82,7 @@ const OrderHistory = () => {
             ? new Date(order.estimatedDeliveryDate)
             : new Date(new Date(order.date).getTime() + 3 * 24 * 60 * 60 * 1000);
 
+        // eslint-disable-next-line
         const daysLeft = Math.ceil((sourceDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
 
         if (daysLeft <= 0) {

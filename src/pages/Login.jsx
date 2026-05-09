@@ -12,8 +12,26 @@ const Login = () => {
     const [otpMode, setOtpMode] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
     const [otpInput, setOtpInput] = useState('');
+    const [authLoading, setAuthLoading] = useState(false);
     const { login, sendEmailOtp, verifyEmailOtp } = useAuth();
     const navigate = useNavigate();
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        if (!email || !password) {
+            setError('Please enter your email and password');
+            return;
+        }
+        setError('');
+        setAuthLoading(true);
+        const res = await login(email, password);
+        if (res.success) {
+            navigate('/');
+        } else {
+            setError(res.error);
+        }
+        setAuthLoading(false);
+    };
 
     const handleSendEmailOtp = async () => {
         if (!email) {
@@ -21,14 +39,14 @@ const Login = () => {
             return;
         }
         setError('');
-        setLoading(true);
+        setAuthLoading(true);
         const res = await sendEmailOtp(email);
         if (res.success) {
             setOtpSent(true);
         } else {
             setError(res.error);
         }
-        setLoading(false);
+        setAuthLoading(false);
     };
 
     const handleVerifyEmailOtp = async () => {
@@ -37,14 +55,14 @@ const Login = () => {
             return;
         }
         setError('');
-        setLoading(true);
+        setAuthLoading(true);
         const res = await verifyEmailOtp(email, otpInput);
         if (res.success) {
             navigate('/');
         } else {
             setError(res.error);
         }
-        setLoading(false);
+        setAuthLoading(false);
     };
 
 
@@ -80,7 +98,7 @@ const Login = () => {
                     </div>
 
                     {!otpMode ? (
-                        <form onSubmit={handleSendEmailOtp} className="auth-form">
+                        <form onSubmit={handleLogin} className="auth-form">
                             {error && <div className="auth-error">{error}</div>}
 
                             <label className="auth-field">
@@ -91,7 +109,7 @@ const Login = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        disabled={loading}
+                                        disabled={authLoading}
                                         placeholder="you@example.com"
                                         className="auth-input"
                                         required
@@ -107,7 +125,7 @@ const Login = () => {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        disabled={loading}
+                                        disabled={authLoading}
                                         placeholder="Enter your password"
                                         className="auth-input"
                                         required
@@ -120,14 +138,14 @@ const Login = () => {
 
                             <div className="auth-meta">
                                 <label className="auth-remember">
-                                    <input type="checkbox" disabled={loading} /> Remember me
+                                    <input type="checkbox" disabled={authLoading} /> Remember me
                                 </label>
                                 <Link to="/faq" className="auth-meta-link">Need help?</Link>
                             </div>
 
                             <div className="auth-actions-stack">
-                                <button type="button" onClick={(e) => { e.preventDefault(); login(email, password).then(r => r.success ? navigate('/') : setError(r.error)); }} className="auth-submit" disabled={loading}>
-                                    {loading ? 'Signing in...' : <><span>Sign In</span><ArrowRight size={16} /></>}
+                                <button type="submit" className="auth-submit" disabled={authLoading}>
+                                    {authLoading ? 'Signing in...' : <><span>Sign in securely</span><ArrowRight size={16} /></>}
                                 </button>
                                 <button type="button" className="auth-switch-btn" onClick={() => setOtpMode(true)}>
                                     Sign in with Code (OTP)
@@ -152,7 +170,7 @@ const Login = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        disabled={loading || otpSent}
+                                        disabled={authLoading || otpSent}
                                         placeholder="you@example.com"
                                         className="auth-input"
                                         required
@@ -170,23 +188,23 @@ const Login = () => {
                                                 type="text"
                                                 value={otpInput}
                                                 onChange={(e) => setOtpInput(e.target.value)}
-                                                disabled={loading}
+                                                disabled={authLoading}
                                                 placeholder="6-digit code"
                                                 className="auth-input"
                                                 required
                                             />
                                         </div>
                                     </label>
-                                    <button type="button" className="auth-submit" onClick={handleVerifyEmailOtp} disabled={loading}>
-                                        {loading ? 'Verifying...' : <><span>Verify & Sign In</span><ArrowRight size={16} /></>}
+                                    <button type="button" className="auth-submit" onClick={handleVerifyEmailOtp} disabled={authLoading}>
+                                        {authLoading ? 'Verifying...' : <><span>Verify & Sign In</span><ArrowRight size={16} /></>}
                                     </button>
                                     <button type="button" className="auth-switch-btn" onClick={() => setOtpSent(false)}>
                                         Change Email
                                     </button>
                                 </>
                             ) : (
-                                <button type="button" className="auth-submit" onClick={handleSendEmailOtp} disabled={loading}>
-                                    {loading ? 'Sending...' : <><span>Send Login Code</span><ArrowRight size={16} /></>}
+                                <button type="button" className="auth-submit" onClick={handleSendEmailOtp} disabled={authLoading}>
+                                    {authLoading ? 'Sending...' : <><span>Send Login Code</span><ArrowRight size={16} /></>}
                                 </button>
                             )}
                             <button type="button" className="auth-switch-btn" onClick={() => setOtpMode(false)}>
