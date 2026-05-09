@@ -42,7 +42,7 @@ const Categories = () => {
         }
 
         return next;
-    }, [filteredProducts, searchTerm, sortBy]);
+    }, [filteredProducts, searchQuery, sortBy]);
 
     // debounce the search input to reduce re-computation while typing
     React.useEffect(() => {

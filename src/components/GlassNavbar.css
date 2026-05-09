@@ -692,3 +692,60 @@
     font-size: 0.8125rem;
   }
 }
+
+/* ── Google CTA section ── */
+.glass-navbar__google-cta {
+  display: grid;
+  gap: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+/* Google sign-in button */
+.glass-button--google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+}
+
+.glass-button--google:hover:not(:disabled) {
+  background: var(--bg-primary);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.glass-button--google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .glass-button--google {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+
+[data-theme="dark"] .glass-button--google:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Google profile photo in navbar */
+.glass-navbar__avatar-img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+}

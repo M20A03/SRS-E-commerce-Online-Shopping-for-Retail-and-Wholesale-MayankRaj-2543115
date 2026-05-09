@@ -43,9 +43,7 @@ const useProducts = () => {
       },
       (error) => {
         console.error('Error loading products:', error);
-        if (products.length === 0) {
-          setProducts(fallbackProducts);
-        }
+        setProducts((prev) => (prev.length === 0 ? fallbackProducts : prev));
         setIsLoading(false);
       }
     );

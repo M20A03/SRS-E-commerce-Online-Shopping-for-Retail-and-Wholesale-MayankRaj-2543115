@@ -19,7 +19,7 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
-import { auth, db, storage } from './firebase';
+import { auth, db } from './firebase';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
@@ -27,6 +27,7 @@ import OrdersPage from './pages/OrdersPage';
 const initialProductState = {
   name: '',
   price: '',
+  stock: 10,
   category: 'oil',
   image: '',
   imageFile: null,
@@ -45,6 +46,7 @@ const App = () => {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState('products');
+  const [theme, setTheme] = useState(() => localStorage.getItem('adminTheme') || 'light');
   
   const [productsLoading, setProductsLoading] = useState(false);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -68,6 +70,11 @@ const App = () => {
   useEffect(() => {
     window.location.hash = currentPage;
   }, [currentPage]);
+
+  useEffect(() => {
+    localStorage.setItem('adminTheme', theme);
+    document.body.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!status) {
@@ -542,7 +549,7 @@ const App = () => {
         showOnHomepage: Boolean(productForm.showOnHomepage),
         showInCarousel: Boolean(productForm.showInCarousel),
         isActive: Boolean(productForm.isActive),
-        stock: 10,
+        stock: Number(productForm.stock !== undefined ? productForm.stock : 10),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -649,10 +656,17 @@ const App = () => {
   };
 
   return (
-    <main className="shell" data-theme="light">
+    <main className="shell">
       <header className="topbar">
         <h1>Roshan Admin App</h1>
         <div className="nav-tabs">
+          <button 
+            className="nav-btn" 
+            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </button>
           {authUser && (
             <>
               <button

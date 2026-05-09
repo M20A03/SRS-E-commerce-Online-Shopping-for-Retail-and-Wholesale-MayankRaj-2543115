@@ -134,7 +134,7 @@ const server = http.createServer(async (req, res) => {
       // Make object public if the bucket is not configured for public access
       try {
         await file.makePublic();
-      } catch (e) {
+      } catch {
         // ignore if makePublic is not permitted; object may already be accessible via signed URL
       }
 

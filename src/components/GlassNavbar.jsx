@@ -17,22 +17,17 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
 
   const handleMove = (event) => {
     const node = innerRef.current;
-    if (!node) {
-      return;
-    }
-
+    if (!node) return;
     const rect = node.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     const distanceX = event.clientX - centerX;
     const distanceY = event.clientY - centerY;
     const distance = Math.min(20, Math.sqrt(distanceX * distanceX + distanceY * distanceY));
-
     if (distance >= 20) {
       node.style.transform = 'translate3d(0, 0, 0)';
       return;
     }
-
     const ratio = (20 - distance) / 20;
     node.style.transform = `translate3d(${distanceX * 0.18 * ratio}px, ${distanceY * 0.18 * ratio}px, 0)`;
   };
@@ -60,22 +55,13 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
 
 const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const { getCartCount } = useCart();
-  const { user, login, register, loginWithGoogle, sendEmailOtp, verifyEmailOtp, logout } = useAuth();
+  const { user, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [authForm, setAuthForm] = useState({
-    displayName: '',
-    email: '',
-    password: ''
-  });
-  const [otpMode, setOtpMode] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpInput, setOtpInput] = useState('');
 
   const cartCount = getCartCount();
   const currentDomain = typeof window !== 'undefined' ? window.location.host : '';
@@ -86,15 +72,13 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     { to: '/categories', label: 'Categories' },
     { to: '/orders', label: 'Orders' }
   ]), []);
+
   const MotionHeader = motion.header;
   const MotionDiv = motion.div;
 
   useEffect(() => {
     setMobileOpen(false);
     setAuthOpen(false);
-    setOtpMode(false);
-    setOtpSent(false);
-    setOtpInput('');
   }, [location.pathname]);
 
   useEffect(() => {
@@ -104,7 +88,6 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
         setAuthOpen(false);
       }
     };
-
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
@@ -115,10 +98,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     } else {
       document.body.style.overflow = '';
     }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [authOpen]);
 
   const handleLogout = async () => {
@@ -126,36 +106,9 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     navigate('/');
   };
 
-  const handleAuthSubmit = async (event) => {
-    event.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
-
-    const email = authForm.email.trim();
-    const password = authForm.password.trim();
-    const displayName = authForm.displayName.trim();
-
-    try {
-      const response = authMode === 'login'
-        ? await login(email, password)
-        : await register(email, password, displayName);
-
-      if (response.success) {
-        setAuthOpen(false);
-        setAuthForm({ displayName: '', email: '', password: '' });
-        navigate('/');
-      } else {
-        setAuthError(response.error || 'Unable to authenticate');
-      }
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
   const handleGoogleLogin = async () => {
     setAuthError('');
     setAuthLoading(true);
-
     try {
       const result = await loginWithGoogle();
       if (result.success) {
@@ -168,43 +121,6 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
       setAuthLoading(false);
     }
   };
-
-  const handleSendEmailOtp = async () => {
-    const email = authForm.email.trim();
-    if (!email) {
-      setAuthError('Please enter your email first');
-      return;
-    }
-    setAuthError('');
-    setAuthLoading(true);
-    const res = await sendEmailOtp(email);
-    if (res.success) {
-      setOtpSent(true);
-    } else {
-      setAuthError(res.error);
-    }
-    setAuthLoading(false);
-  };
-
-  const handleVerifyEmailOtp = async () => {
-    if (!otpInput) {
-      setAuthError('Please enter the code');
-      return;
-    }
-    setAuthError('');
-    setAuthLoading(true);
-    const res = await verifyEmailOtp(authForm.email.trim(), otpInput);
-    if (res.success) {
-      setAuthOpen(false);
-      navigate('/');
-    } else {
-      setAuthError(res.error);
-    }
-    setAuthLoading(false);
-  };
-
-
-
 
   return (
     <>
@@ -260,9 +176,11 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
               <>
                 <div className="glass-navbar__auth-panel">
                   <button type="button" className="glass-button glass-button--soft" onClick={() => navigate('/account')}>
-                    <span className="glass-navbar__avatar">
-                      <User size={16} />
-                    </span>
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || 'User'} className="glass-navbar__avatar-img" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span className="glass-navbar__avatar"><User size={16} /></span>
+                    )}
                     <span className="glass-navbar__user-copy">
                       <span className="glass-navbar__user-label">Signed in as</span>
                       <span className="glass-navbar__user-name">{user.displayName || user.email}</span>
@@ -280,11 +198,8 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
             ) : (
               <MagneticButton
                 className="glass-button--soft glass-navbar__icon-button"
-                ariaLabel="Open sign in dialog"
-                onClick={() => {
-                  setAuthMode('login');
-                  setAuthOpen(true);
-                }}
+                ariaLabel="Sign in with Google"
+                onClick={() => setAuthOpen(true)}
               >
                 <User size={17} />
               </MagneticButton>
@@ -333,12 +248,10 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                   <button
                     type="button"
                     className="glass-button glass-button--soft glass-navbar__mobile-action"
-                    onClick={() => {
-                      setAuthMode('login');
-                      setAuthOpen(true);
-                    }}
+                    onClick={() => setAuthOpen(true)}
                   >
-                    <User size={16} />
+                    <Chrome size={16} />
+                    Sign in with Google
                   </button>
                 )}
               </div>
@@ -347,6 +260,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
         </AnimatePresence>
       </MotionHeader>
 
+      {/* ── Google Sign-In Modal ── */}
       <AnimatePresence>
         {authOpen && (
           <MotionDiv
@@ -366,10 +280,9 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
             >
               <div className="glass-navbar__modal-top">
                 <div>
-                  <h2 className="glass-navbar__modal-title">{authMode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+                  <h2 className="glass-navbar__modal-title">Welcome to Roshan Enterprises</h2>
                   <p className="glass-navbar__modal-copy">
-                    Sign in securely to continue shopping premium daily essentials.
-                    <Link to="/auth-info" className="glass-navbar__info-link" style={{ marginLeft: '0.5rem', textDecoration: 'underline', opacity: 0.8 }}>How it works?</Link>
+                    Sign in with your Google account to track orders and manage your cart across devices.
                   </p>
                 </div>
                 <MagneticButton className="glass-button--soft glass-navbar__icon-button" ariaLabel="Close dialog" onClick={() => setAuthOpen(false)}>
@@ -377,134 +290,35 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                 </MagneticButton>
               </div>
 
-              <div className="glass-navbar__tabs" role="tablist" aria-label="Authentication mode">
-                <button type="button" className={`glass-navbar__tab ${authMode === 'login' ? 'is-active' : ''}`} onClick={() => setAuthMode('login')}>
-                  Sign in
-                </button>
-                <button type="button" className={`glass-navbar__tab ${authMode === 'register' ? 'is-active' : ''}`} onClick={() => setAuthMode('register')}>
-                  Sign up
-                </button>
-              </div>
-
-              {authError && <div className="glass-navbar__error">{authError}</div>}
-
-              <div className="glass-navbar__social-actions">
-                <button type="button" className="glass-button glass-button--soft" onClick={handleGoogleLogin} disabled={authLoading}>
-                  <Chrome size={16} />
-                  Continue with Google
-                </button>
-                {authError.includes('Google login blocked for this domain') && (
-                  <p className="glass-navbar__hint" style={{ marginTop: '0.2rem' }}>
-                    Add <strong>{currentDomain}</strong> in Firebase Authentication settings under Authorized domains.
-                  </p>
-                )}
-              </div>
-
-              <div className="glass-navbar__divider" aria-hidden="true">or</div>
-
-              <div className="glass-navbar__form">
-                {!otpMode ? (
-                  <form onSubmit={handleAuthSubmit}>
-                    {authMode === 'register' && (
-                      <div className="glass-navbar__field-group">
-                        <label className="glass-navbar__field">
-                          <span className="glass-navbar__label">Full name</span>
-                          <input
-                            className="glass-navbar__input"
-                            type="text"
-                            value={authForm.displayName}
-                            onChange={(event) => setAuthForm((previous) => ({ ...previous, displayName: event.target.value }))}
-                            placeholder="Enter your name"
-                            required
-                          />
-                        </label>
-                      </div>
-                    )}
-
-                    <label className="glass-navbar__field">
-                      <span className="glass-navbar__label">Email</span>
-                      <input
-                        className="glass-navbar__input"
-                        type="email"
-                        value={authForm.email}
-                        onChange={(event) => setAuthForm((previous) => ({ ...previous, email: event.target.value }))}
-                        placeholder="you@example.com"
-                        required
-                      />
-                    </label>
-
-                    <label className="glass-navbar__field">
-                      <span className="glass-navbar__label">Password</span>
-                      <input
-                        className="glass-navbar__input"
-                        type="password"
-                        value={authForm.password}
-                        onChange={(event) => setAuthForm((previous) => ({ ...previous, password: event.target.value }))}
-                        placeholder="Enter password"
-                        required
-                      />
-                    </label>
-
-                    <p className="glass-navbar__hint">
-                      By continuing, you agree to our terms and privacy policy.
+              {authError && (
+                <div className="glass-navbar__error">
+                  {authError}
+                  {authError.includes('Google login blocked for this domain') && (
+                    <p className="glass-navbar__hint" style={{ marginTop: '0.4rem' }}>
+                      Add <strong>{currentDomain}</strong> in Firebase Authentication → Authorized domains.
                     </p>
+                  )}
+                </div>
+              )}
 
-                    <div className="glass-navbar__auth-buttons">
-                      <button type="submit" className="glass-button glass-button--primary" disabled={authLoading}>
-                        {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign in' : 'Create account'}
-                      </button>
-                      <button type="button" className="glass-button glass-button--soft" onClick={() => setOtpMode(true)}>
-                        Sign in with Code (OTP)
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="glass-navbar__otp-flow">
-                    <label className="glass-navbar__field">
-                      <span className="glass-navbar__label">Email</span>
-                      <input
-                        className="glass-navbar__input"
-                        type="email"
-                        value={authForm.email}
-                        onChange={(event) => setAuthForm((previous) => ({ ...previous, email: event.target.value }))}
-                        placeholder="you@example.com"
-                        disabled={otpSent}
-                      />
-                    </label>
+              <div className="glass-navbar__google-cta">
+                <button
+                  id="google-signin-btn"
+                  type="button"
+                  className="glass-button glass-button--google"
+                  onClick={handleGoogleLogin}
+                  disabled={authLoading}
+                >
+                  <Chrome size={20} />
+                  {authLoading ? 'Signing in…' : 'Continue with Google'}
+                </button>
 
-                    {otpSent ? (
-                      <>
-                        <label className="glass-navbar__field">
-                          <span className="glass-navbar__label">Enter Code</span>
-                          <input
-                            className="glass-navbar__input"
-                            type="text"
-                            value={otpInput}
-                            onChange={(e) => setOtpInput(e.target.value)}
-                            placeholder="6-digit code"
-                          />
-                        </label>
-                        <button type="button" className="glass-button glass-button--primary" onClick={handleVerifyEmailOtp} disabled={authLoading}>
-                          Verify & Sign In
-                        </button>
-                        <button type="button" className="glass-button glass-button--ghost" onClick={() => setOtpSent(false)}>
-                          Change Email
-                        </button>
-                      </>
-                    ) : (
-                      <button type="button" className="glass-button glass-button--primary" onClick={handleSendEmailOtp} disabled={authLoading}>
-                        Send Login Code
-                      </button>
-                    )}
-                    <button type="button" className="glass-button glass-button--ghost" onClick={() => setOtpMode(false)}>
-                      Back to Password login
-                    </button>
-                  </div>
-                )}
+                <p className="glass-navbar__hint">
+                  By continuing, you agree to our{' '}
+                  <Link to="/terms" onClick={() => setAuthOpen(false)}>Terms</Link> and{' '}
+                  <Link to="/privacy" onClick={() => setAuthOpen(false)}>Privacy Policy</Link>.
+                </p>
               </div>
-
-
-
             </MotionDiv>
           </MotionDiv>
         )}

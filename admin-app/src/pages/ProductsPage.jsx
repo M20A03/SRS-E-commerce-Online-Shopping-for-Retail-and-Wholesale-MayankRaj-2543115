@@ -20,14 +20,25 @@ export default function ProductsPage({
   toggleCarousel,
   productsLoading,
   loadProducts,
-  uploadImage
+  uploadImage,
+  createBulkProducts
 }) {
   const [productSearch, setProductSearch] = useState('');
+  const [bulkForm, setBulkForm] = useState({
+    files: [],
+    namePrefix: '',
+    price: '',
+    category: 'others',
+    description: '',
+    featured: false,
+    isActive: true
+  });
   const [imageSource, setImageSource] = useState('url');
   const [editingProductId, setEditingProductId] = useState('');
   const [editForm, setEditForm] = useState({
     name: '',
     price: '',
+    stock: 10,
     category: 'others',
     description: '',
     isActive: true,
@@ -118,6 +129,7 @@ export default function ProductsPage({
     setEditForm({
       name: product.name || '',
       price: String(product.price || ''),
+      stock: product.stock !== undefined ? product.stock : 10,
       category: product.category || 'others',
       description: product.description || '',
       isActive: product.isActive !== false,
@@ -137,6 +149,7 @@ export default function ProductsPage({
     setEditForm({
       name: '',
       price: '',
+      stock: 10,
       category: 'others',
       description: '',
       isActive: true,
@@ -173,6 +186,7 @@ export default function ProductsPage({
     await updateProduct(productId, {
       name: editForm.name.trim(),
       price: Number(editForm.price),
+      stock: Number(editForm.stock),
       category: editForm.category,
       description: editForm.description.trim(),
       image: finalImages[0] || '',
@@ -226,6 +240,15 @@ export default function ProductsPage({
             placeholder="Price"
             value={productForm.price}
             onChange={(event) => setProductForm((prev) => ({ ...prev, price: event.target.value }))}
+            required
+          />
+          <input
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Stock Quantity"
+            value={productForm.stock !== undefined ? productForm.stock : ''}
+            onChange={(event) => setProductForm((prev) => ({ ...prev, stock: event.target.value }))}
             required
           />
           <select
@@ -342,6 +365,53 @@ export default function ProductsPage({
       </section>
 
       <section className="card">
+        <h2>Bulk Upload Products</h2>
+        <p className="muted">Upload multiple photos to create products for each one automatically.</p>
+        <form onSubmit={handleBulkUpload} className="form-grid">
+          <div className="image-upload-container">
+            <label className="file-input-label">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleBulkFilesChange}
+                className="file-input-hidden"
+              />
+              <span className="file-input-btn">Select Photos</span>
+            </label>
+            {bulkForm.files.length > 0 && (
+              <p className="muted">Selected {bulkForm.files.length} photos</p>
+            )}
+          </div>
+          <input
+            type="text"
+            placeholder="Name Prefix (Optional)"
+            value={bulkForm.namePrefix}
+            onChange={(e) => setBulkForm(prev => ({ ...prev, namePrefix: e.target.value }))}
+          />
+          <input
+            type="number"
+            placeholder="Default Price"
+            value={bulkForm.price}
+            onChange={(e) => setBulkForm(prev => ({ ...prev, price: e.target.value }))}
+          />
+          <select
+            value={bulkForm.category}
+            onChange={(e) => setBulkForm(prev => ({ ...prev, category: e.target.value }))}
+          >
+            <option value="oil">Oil</option>
+            <option value="detergent">Detergent</option>
+            <option value="tea">Tea</option>
+            <option value="agarbatti">Agarbatti</option>
+            <option value="others">Others</option>
+          </select>
+          <button className="btn" type="submit" disabled={!bulkForm.files.length}>
+            Upload {bulkForm.files.length || ''} Products
+          </button>
+        </form>
+      </section>
+
+      <section className="card">
         <div className="row-title">
           <h2>Manage Products</h2>
           <div className="row-title-actions">
@@ -376,8 +446,17 @@ export default function ProductsPage({
                       type="number"
                       min="0"
                       step="0.01"
+                      placeholder="Price"
                       value={editForm.price}
                       onChange={(event) => setEditForm((prev) => ({ ...prev, price: event.target.value }))}
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Stock Quantity"
+                      value={editForm.stock}
+                      onChange={(event) => setEditForm((prev) => ({ ...prev, stock: event.target.value }))}
                     />
                     <select
                       value={editForm.category}
@@ -467,7 +546,7 @@ export default function ProductsPage({
                       <div>
                         <p><strong>{product.name}</strong></p>
                         <p className="muted">
-                          Category: {product.category || 'others'} | Price: Rs {Number(product.price || 0).toFixed(2)}
+                          Category: {product.category || 'others'} | Price: Rs {Number(product.price || 0).toFixed(2)} | Stock: {product.stock !== undefined ? product.stock : 10}
                           {' '}
                           <span className="badge">{product.isActive === false ? 'Hidden' : 'Visible'}</span>
                           {product.showInCarousel === true && (

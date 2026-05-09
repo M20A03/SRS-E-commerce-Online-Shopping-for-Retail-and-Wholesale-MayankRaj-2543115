@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap, ChevronLeft, ChevronRight, Star, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import './Homepage.css';
@@ -116,9 +115,7 @@ const HeroSlider = ({ products, onAddToCart }) => {
 
 /* ─── Main Homepage ─── */
 const Homepage = ({ onOpenCart }) => {
-  const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const { products, categories, isLoading: isProductsLoading } = useProducts();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,7 +129,7 @@ const Homepage = ({ onOpenCart }) => {
   };
 
   // Visual-only callback for ProductCard fly animation — ProductCard already calls addToCart internally
-  const handleCartFly = (product) => {
+  const handleCartFly = () => {
     // No addToCart here — ProductCard's own handler already did it
   };
 
@@ -144,7 +141,10 @@ const Homepage = ({ onOpenCart }) => {
   const carouselProducts = useMemo(() => homepageProducts.filter((p) => p.showInCarousel === true).slice(0, 6), [homepageProducts]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSearchQuery(searchInput.trim().toLowerCase()), 300);
+    const timer = setTimeout(() => {
+      setSearchQuery(searchInput.trim().toLowerCase());
+      setCurrentPage(1);
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
@@ -158,14 +158,21 @@ const Homepage = ({ onOpenCart }) => {
   }, [activeCategory, searchQuery, homepageProducts]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const visibleProducts = useMemo(() => filteredProducts.slice(startIdx, startIdx + itemsPerPage), [filteredProducts, currentPage, startIdx]);
+  
+  const visibleProducts = useMemo(() => {
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(startIdx, startIdx + itemsPerPage);
+  }, [filteredProducts, currentPage]);
 
   const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
   const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
   const handlePageJump = (page) => { if (page >= 1 && page <= totalPages) setCurrentPage(page); };
 
-  useEffect(() => { setCurrentPage(1); }, [activeCategory, searchQuery]);
+  // Handlers to reset page on filter change
+  const handleCategorySelect = (catId) => {
+    setActiveCategory(catId);
+    setCurrentPage(1);
+  };
 
   const statChips = [
     { icon: <Package size={14} />, label: `${products.length}+ Products` },
@@ -292,12 +299,12 @@ const Homepage = ({ onOpenCart }) => {
               />
             </div>
             <div className="homepage__filters">
-              <button className={`homepage__filter ${activeCategory === 'all' ? 'is-active' : ''}`} onClick={() => setActiveCategory('all')}>All</button>
+              <button className={`homepage__filter ${activeCategory === 'all' ? 'is-active' : ''}`} onClick={() => handleCategorySelect('all')}>All</button>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   className={`homepage__filter ${activeCategory === cat.id ? 'is-active' : ''}`}
-                  onClick={() => setActiveCategory(cat.id)}
+                  onClick={() => handleCategorySelect(cat.id)}
                 >
                   {cat.name}
                 </button>
@@ -319,7 +326,7 @@ const Homepage = ({ onOpenCart }) => {
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
               >
-                {visibleProducts.map((product, i) => (
+                {visibleProducts.map((product) => (
                   <motion.div
                     key={product.id}
                     variants={{ hidden: { opacity: 0, y: 24, scale: 0.95 }, visible: { opacity: 1, y: 0, scale: 1 } }}

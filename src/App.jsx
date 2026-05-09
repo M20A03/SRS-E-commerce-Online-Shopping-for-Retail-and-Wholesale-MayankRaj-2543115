@@ -15,12 +15,8 @@ import SparkleCanvas from './components/SparkleCanvas';
 import { ToastProvider } from './context/ToastContext';
 import ToastContainer from './components/ToastContainer';
 
-const AuthInfo = lazy(() => import('./pages/AuthInfo'));
-
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Categories = lazy(() => import('./pages/Categories'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
 const Account = lazy(() => import('./pages/Account'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
@@ -44,7 +40,6 @@ const AppContent = () => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return false;
     }
-
     return window.matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)').matches;
   });
   const cartButtonRef = useRef(null);
@@ -77,20 +72,16 @@ const AppContent = () => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return undefined;
     }
-
     const mediaQuery = window.matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)');
     const applyRouteMotionPreference = () => {
       setDisableRouteMotion(mediaQuery.matches);
     };
-
     applyRouteMotionPreference();
-
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', applyRouteMotionPreference);
     } else {
       mediaQuery.addListener(applyRouteMotionPreference);
     }
-
     return () => {
       if (typeof mediaQuery.removeEventListener === 'function') {
         mediaQuery.removeEventListener('change', applyRouteMotionPreference);
@@ -119,51 +110,49 @@ const AppContent = () => {
 
       <main className="main-content">
         <Suspense fallback={<div className="spinner">Loading...</div>}>
-          <MotionDiv
-            key={location.pathname}
-            className="route-transition-shell"
-            initial={disableRouteMotion ? false : { opacity: 0, y: 24, scale: 0.99 }}
-            animate={disableRouteMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-            exit={disableRouteMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 0.995 }}
-            transition={disableRouteMotion ? { duration: 0.18, ease: 'linear' } : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <Routes location={location}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/auth-info" element={<AuthInfo />} />
-
-              <Route
-                path="/"
-                element={<Homepage onOpenCart={() => setIsCartOpen(true)} cartButtonRef={cartButtonRef} />}
-              />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route
-                path="/account"
-                element={
-                  <ProtectedRoute>
-                    <Account />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route
-                path="/orders"
-                element={
-                  <ProtectedRoute>
-                    <OrderHistory />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/shipping-policy" element={<ShippingPolicy />} />
-              <Route path="/return-policy" element={<ReturnPolicy />} />
-            </Routes>
-          </MotionDiv>
+          <AnimatePresence mode="wait">
+            <MotionDiv
+              key={location.pathname}
+              className="route-transition-shell"
+              initial={disableRouteMotion ? false : { opacity: 0, y: 24, scale: 0.99 }}
+              animate={disableRouteMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+              exit={disableRouteMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 0.995 }}
+              transition={disableRouteMotion ? { duration: 0.18, ease: 'linear' } : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Routes location={location}>
+                <Route
+                  path="/"
+                  element={<Homepage onOpenCart={() => setIsCartOpen(true)} cartButtonRef={cartButtonRef} />}
+                />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route
+                  path="/orders"
+                  element={
+                    <ProtectedRoute>
+                      <OrderHistory />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<ContactUs />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/return-policy" element={<ReturnPolicy />} />
+              </Routes>
+            </MotionDiv>
+          </AnimatePresence>
         </Suspense>
       </main>
 

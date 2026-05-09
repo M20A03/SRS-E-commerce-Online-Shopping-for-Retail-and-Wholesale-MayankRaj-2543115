@@ -1,15 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, ShoppingCart, Sparkles, TriangleAlert } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
-    const navigate = useNavigate();
     const { addToCart } = useCart();
-    const { user } = useAuth();
     const cardRef = useRef(null);
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);

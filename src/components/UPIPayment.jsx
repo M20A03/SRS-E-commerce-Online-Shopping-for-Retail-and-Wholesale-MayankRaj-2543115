@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, Check } from 'lucide-react';
 import './UPIPayment.css';
@@ -11,8 +11,11 @@ const UPIPayment = ({ amount, customerName = 'Roshan Enterprises', onPaymentConf
   // Your UPI ID - Replace with your actual UPI ID
   const UPI_ID = 'mayankraj.dhn5-2@okaxis'; // Axis Bank UPI ID
   
-  // Generate UPI link
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(customerName)}&am=${amount}&tn=Payment%20for%20Order&tr=ORD${Math.floor(Math.random() * 1000000)}`;
+  // eslint-disable-next-line react-hooks/purity
+  const randomSuffix = useRef(Math.floor(Math.random() * 1000000)).current;
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(customerName)}&am=${amount}&tn=Payment%20for%20Order&tr=ORD${randomSuffix}`;
+  
+  // No more useEffect/useState needed for upiLink calculation!
 
   const handleCopyUPI = () => {
     navigator.clipboard.writeText(UPI_ID);
