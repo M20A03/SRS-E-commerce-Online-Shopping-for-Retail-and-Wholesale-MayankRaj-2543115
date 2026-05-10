@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chrome, ChevronRight, Home, LogOut, Menu, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
+import { AlignJustify, Chrome, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './GlassNavbar.css';
@@ -211,7 +211,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
               ariaLabel="Open menu"
               onClick={() => setMobileOpen((value) => !value)}
             >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              {mobileOpen ? <X size={18} /> : <AlignJustify size={18} />}
             </MagneticButton>
           </div>
         </div>

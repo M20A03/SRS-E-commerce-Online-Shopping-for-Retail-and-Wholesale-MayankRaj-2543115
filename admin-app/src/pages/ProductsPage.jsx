@@ -68,9 +68,19 @@ export default function ProductsPage({
     });
   }, [products, productSearch]);
 
-  const pendingAccessRequests = useMemo(() => (
-    accessRequests.filter((request) => (request.status || 'pending') === 'pending')
-  ), [accessRequests]);
+  const pendingAccessRequests = useMemo(() => {
+    const pending = accessRequests.filter((request) => (request.status || 'pending') === 'pending');
+    const latestByEmail = {};
+    for (const request of pending) {
+      const email = request.email?.toLowerCase();
+      if (!email) continue;
+      const current = latestByEmail[email];
+      if (!current || new Date(request.createdAt) > new Date(current.createdAt)) {
+        latestByEmail[email] = request;
+      }
+    }
+    return Object.values(latestByEmail);
+  }, [accessRequests]);
 
   useEffect(() => {
     const requestsQuery = query(collection(db, 'adminAccessRequests'), orderBy('createdAt', 'desc'));
