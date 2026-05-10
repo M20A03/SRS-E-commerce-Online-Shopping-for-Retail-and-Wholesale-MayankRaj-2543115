@@ -37,6 +37,12 @@ const Checkout = () => {
         }
     }, [cart.length, navigate, orderComplete]);
 
+    useEffect(() => {
+        if (orderComplete) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [orderComplete]);
+
     const resolvedCustomerInfo = {
         firstName: customerInfo.firstName || user?.firstName || '',
         lastName: customerInfo.lastName || user?.lastName || '',
@@ -106,6 +112,7 @@ const Checkout = () => {
 
             setOrderComplete(true);
             clearCart();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             setFormError(error.message || 'Failed to process UPI payment. Please try again.');
         } finally {
@@ -170,6 +177,7 @@ const Checkout = () => {
 
             setOrderComplete(true);
             clearCart();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             setFormError(error.message || 'Failed to place order. Please try again.');
         } finally {
