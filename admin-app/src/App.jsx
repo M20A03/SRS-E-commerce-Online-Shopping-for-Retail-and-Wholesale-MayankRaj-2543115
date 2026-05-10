@@ -622,8 +622,10 @@ const App = () => {
     });
   };
 
-  const handleGrant = async (event) => {
-    event.preventDefault();
+  const handleGrant = async (eventOrEmail) => {
+    if (eventOrEmail && typeof eventOrEmail.preventDefault === 'function') {
+      eventOrEmail.preventDefault();
+    }
     setError('');
 
     if (!isSuperAdmin) {
@@ -631,9 +633,16 @@ const App = () => {
       return;
     }
 
+    const targetEmail = typeof eventOrEmail === 'string' ? eventOrEmail : roleEmail;
+    if (!targetEmail.trim()) {
+      setError('Enter an email address.');
+      return;
+    }
+
     try {
-      await setAdminRoleByEmail(roleEmail, true);
+      await setAdminRoleByEmail(targetEmail, true);
       setRoleStatus('Admin role granted successfully.');
+      setRoleEmail('');
     } catch (roleError) {
       setError(roleError.message || 'Failed to grant role.');
     }
@@ -660,13 +669,21 @@ const App = () => {
       <header className="topbar">
         <h1>Roshan Admin App</h1>
         <div className="nav-tabs">
-          <button 
-            className="nav-btn" 
+          {/* ── Theme toggle switch ── */}
+          <button
+            type="button"
+            className="theme-toggle"
             onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-            aria-label="Toggle Theme"
+            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
           >
-            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+            <span className="theme-toggle__icon">{theme === 'light' ? '☀️' : '🌙'}</span>
+            <span className="theme-toggle__track">
+              <span className="theme-toggle__thumb" />
+            </span>
+            <span className="theme-toggle__icon">{theme === 'light' ? '🌙' : '☀️'}</span>
           </button>
+
           {authUser && (
             <>
               <button

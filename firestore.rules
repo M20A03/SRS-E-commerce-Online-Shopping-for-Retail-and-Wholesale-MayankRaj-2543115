@@ -49,6 +49,15 @@ service cloud.firestore {
       allow create: if request.auth.uid == userId;
     }
 
+    // Admin access requests - customers can create their own request, super-admins can manage them
+    match /adminAccessRequests/{requestId} {
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid || isAdmin() || isSuperAdmin());
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
     // Deny all other access
     match /{document=**} {
       allow read, write: if false;

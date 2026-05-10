@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '../firebase-config';
 import { User, Mail, Phone, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
 
 const Account = () => {
@@ -28,6 +30,8 @@ const Account = () => {
 
     const [isEditing, setIsEditing] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [accessRequest, setAccessRequest] = useState({ reason: '' });
+    const [requestState, setRequestState] = useState({ loading: false, text: '', type: '' });
 
     useEffect(() => {
         if (!user) navigate('/');
@@ -52,6 +56,32 @@ const Account = () => {
             setIsEditing(false);
         } else {
             setMessage({ type: 'error', text: result.error || 'Failed to update profile.' });
+        }
+    };
+
+    const handleAccessRequestSubmit = async (e) => {
+        e.preventDefault();
+        setRequestState({ loading: true, text: '', type: '' });
+
+        try {
+            await addDoc(collection(db, 'adminAccessRequests'), {
+                uid: user.uid,
+                email: user.email || '',
+                displayName: profileTitle,
+                reason: accessRequest.reason.trim(),
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+
+            setAccessRequest({ reason: '' });
+            setRequestState({ loading: false, text: 'Request sent to the super-admin.', type: 'success' });
+        } catch (requestError) {
+            setRequestState({
+                loading: false,
+                text: requestError.message || 'Failed to send access request.',
+                type: 'error'
+            });
         }
     };
 
@@ -175,6 +205,40 @@ const Account = () => {
                             </div>
                         )}
                     </form>
+
+                    <div className="card" style={{ marginTop: '2rem', padding: '1.5rem', border: '1px solid var(--border-color)' }}>
+                        <h3 className="heading-3 mb-2">Request Admin Access</h3>
+                        <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            If you need admin access for your Gmail account, send a request to the super-admin from here.
+                        </p>
+
+                        <form onSubmit={handleAccessRequestSubmit} className="flex-col gap-4">
+                            <textarea
+                                className="input"
+                                rows="3"
+                                placeholder="Why do you need admin access?"
+                                value={accessRequest.reason}
+                                onChange={(event) => setAccessRequest({ reason: event.target.value })}
+                                required
+                            />
+                            <button type="submit" className="btn btn-primary" disabled={requestState.loading}>
+                                {requestState.loading ? 'Sending Request...' : 'Send Access Request'}
+                            </button>
+                        </form>
+
+                        {requestState.text && (
+                            <div style={{
+                                marginTop: '1rem',
+                                padding: '0.875rem 1rem',
+                                borderRadius: 'var(--radius-md)',
+                                backgroundColor: requestState.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: requestState.type === 'success' ? 'var(--success-color)' : '#ef4444',
+                                border: `1px solid ${requestState.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`
+                            }}>
+                                {requestState.text}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
