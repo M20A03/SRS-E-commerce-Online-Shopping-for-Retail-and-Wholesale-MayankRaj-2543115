@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chrome, ChevronRight, LogOut, Menu, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
+import { Chrome, ChevronRight, Home, LogOut, Menu, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './GlassNavbar.css';
@@ -131,9 +131,10 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
         transition={{ duration: 0.4 }}
       >
         <div className="glass-navbar__inner">
-          <Link to="/" className="glass-navbar__brand">
+          <Link to="/" className="glass-navbar__brand" aria-label="Go to home page">
             <span className="glass-navbar__brand-mark">
-              <Sparkles size={18} />
+              <Sparkles size={18} className="glass-navbar__brand-mark--desktop" />
+              <Home size={18} className="glass-navbar__brand-mark--mobile" />
             </span>
             <span className="glass-navbar__brand-copy">
               <span className="glass-navbar__brand-title">Roshan Enterprises</span>
