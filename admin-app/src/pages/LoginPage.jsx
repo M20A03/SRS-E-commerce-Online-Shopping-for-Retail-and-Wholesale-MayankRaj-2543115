@@ -1,4 +1,53 @@
-export default function LoginPage({ loginForm, setLoginForm, handleLogin, handleGoogleLogin, error }) {
+export default function LoginPage({
+  mode = 'login',
+  loginForm,
+  setLoginForm,
+  handleLogin,
+  handleGoogleLogin,
+  authUser,
+  accessStatus,
+  requestReason,
+  setRequestReason,
+  handleRequestAccess,
+  handleLogout,
+  error
+}) {
+  if (mode === 'request') {
+    return (
+      <section className="card login-card access-card">
+        <div className="access-card__header">
+          <div>
+            <p className="access-card__eyebrow">Access request</p>
+            <h2>Request admin approval</h2>
+            <p className="muted">You are signed in as {authUser?.email || 'this account'}, but admin access is not enabled yet.</p>
+          </div>
+          <button className="btn btn-soft" type="button" onClick={handleLogout}>Logout</button>
+        </div>
+
+        <div className="access-card__panel">
+          <p className="muted">Ask a super-admin to grant your Gmail account access. Once approved, you can open the products and orders dashboard.</p>
+          <form className="form-grid" onSubmit={handleRequestAccess}>
+            <input
+              type="email"
+              value={authUser?.email || ''}
+              readOnly
+            />
+            <textarea
+              rows={4}
+              placeholder="Why do you need admin access?"
+              value={requestReason}
+              onChange={(event) => setRequestReason(event.target.value)}
+              required
+            />
+            <button className="btn" type="submit">Request Access</button>
+          </form>
+          {accessStatus && <p className="success-message">{accessStatus}</p>}
+          {error && <p className="error">{error}</p>}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="card login-card">
       <h2>Admin Login</h2>

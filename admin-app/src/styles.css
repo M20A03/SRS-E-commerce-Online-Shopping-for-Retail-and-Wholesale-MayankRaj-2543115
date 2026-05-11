@@ -670,6 +670,41 @@ select option {
   margin: 40px auto;
 }
 
+.access-card {
+  max-width: 560px;
+}
+
+.access-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.access-card__eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.access-card__panel {
+  display: grid;
+  gap: 14px;
+}
+
+.success-message {
+  color: var(--success-color);
+  min-height: 20px;
+  font-size: 0.9rem;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .row-title {
@@ -708,5 +743,110 @@ select option {
 
   .shell {
     padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar h1 {
+    font-size: 1.2rem;
+  }
+
+  .nav-tabs {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .nav-btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .login-card,
+  .access-card {
+    margin: 20px auto;
+  }
+
+  .access-card__header {
+    flex-direction: column;
+  }
+
+  .role-buttons {
+    flex-direction: column;
+  }
+
+  .role-buttons .btn {
+    width: 100%;
+  }
+
+  .item-actions {
+    width: 100%;
+  }
+
+  .item-actions .btn {
+    flex: 1;
+  }
+
+  .item-edit-grid {
+    padding: 12px;
+  }
+
+  .search-input {
+    border-radius: var(--radius-md);
+  }
+
+  .image-upload-container {
+    padding: 12px;
+  }
+
+  .file-input-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .shell {
+    padding: 12px;
+  }
+
+  .topbar {
+    gap: 12px;
+  }
+
+  .topbar h1 {
+    text-align: center;
+  }
+
+  .nav-tabs {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .nav-btn {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .item {
+    padding: 12px;
+  }
+
+  .order-item {
+    padding: 12px;
+  }
+
+  .muted,
+  .error,
+  .success-message {
+    font-size: 0.85rem;
   }
 }

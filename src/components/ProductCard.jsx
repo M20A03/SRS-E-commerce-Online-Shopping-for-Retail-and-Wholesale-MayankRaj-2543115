@@ -2,12 +2,14 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const { user } = useAuth();
+    const { addToast } = useToast();
     const cardRef = useRef(null);
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -31,6 +33,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
         // Check if user is logged in
         if (!user) {
             console.log('❌ No user logged in, redirecting to register');
+            addToast('Sign in to add items to your cart.', 'info');
             // Redirect to signup page
             navigate('/account', { state: { from: '/checkout', product: product.id, prompt: 'Please create an account to continue shopping.' } });
             return;
@@ -38,6 +41,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
         
         console.log('✅ User logged in, adding to cart:', product.id);
         addToCart(product);
+        addToast(`${product.name} added to your cart.`, 'success');
         console.log('✅ Added to cart, calling onAddToCartFly');
         if (typeof onAddToCartFly === 'function') {
             onAddToCartFly(product, actionButtonRef.current?.getBoundingClientRect());

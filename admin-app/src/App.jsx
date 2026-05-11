@@ -16,6 +16,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  setDoc,
   updateDoc,
   where
 } from 'firebase/firestore';
@@ -56,10 +57,12 @@ const App = () => {
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [roleStatus, setRoleStatus] = useState('');
+  const [accessStatus, setAccessStatus] = useState('');
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [productForm, setProductForm] = useState(initialProductState);
   const [roleEmail, setRoleEmail] = useState('');
+  const [requestReason, setRequestReason] = useState('');
 
   useEffect(() => {
     const hashPage = (window.location.hash || '').replace('#', '');
@@ -89,6 +92,18 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [status]);
 
+  useEffect(() => {
+    if (!accessStatus) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setAccessStatus('');
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [accessStatus]);
+
   const mapGoogleError = (error) => {
     const code = error?.code || '';
 
@@ -114,6 +129,7 @@ const App = () => {
   const clearMessages = () => {
     setError('');
     setStatus('');
+    setAccessStatus('');
   };
 
   const getIsAdmin = async (uid) => {
@@ -129,6 +145,30 @@ const App = () => {
     const markerRef = doc(db, 'superAdmins', uid);
     const snap = await getDoc(markerRef);
     return snap.exists();
+  };
+
+  const ensureSuperAdminProfile = async (user) => {
+    const userRef = doc(db, 'users', user.uid);
+    const now = new Date().toISOString();
+    const snapshot = await getDoc(userRef);
+
+    if (snapshot.exists()) {
+      await updateDoc(userRef, {
+        isAdmin: true,
+        updatedAt: now
+      });
+      return;
+    }
+
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email || '',
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      createdAt: now,
+      updatedAt: now,
+      isAdmin: true
+    });
   };
 
   const uploadImage = async (file) => {
@@ -261,6 +301,7 @@ const App = () => {
       setError('');
       setStatus('');
       setRoleStatus('');
+      setAccessStatus('');
 
       if (!user) {
         setAuthUser(null);
@@ -274,18 +315,23 @@ const App = () => {
 
       try {
         const admin = await getIsAdmin(user.uid);
-        if (!admin) {
-          await signOut(auth);
-          setError('This account is not admin. Ask super-admin for access.');
-          setAuthUser(null);
+        const superAdmin = await getIsSuperAdmin(user.uid);
+
+        if (superAdmin && !admin) {
+          await ensureSuperAdminProfile(user);
+        }
+
+        if (!admin && !superAdmin) {
+          setAuthUser(user);
           setIsAdmin(false);
           setIsSuperAdmin(false);
+          setAccessStatus('Your account is signed in, but admin access has not been granted yet. Request access from a super-admin below.');
           setProducts([]);
+          setOrders([]);
           setIsLoading(false);
           return;
         }
 
-        const superAdmin = await getIsSuperAdmin(user.uid);
         setAuthUser(user);
         setIsAdmin(true);
         setIsSuperAdmin(superAdmin);
@@ -370,6 +416,46 @@ const App = () => {
   const handleLogout = async () => {
     clearMessages();
     await signOut(auth);
+  };
+
+  const handleRequestAccess = async (event) => {
+    event.preventDefault();
+    clearMessages();
+
+    if (!authUser) {
+      setError('Sign in first to request admin access.');
+      return;
+    }
+
+    try {
+      const existingRequestQuery = query(
+        collection(db, 'adminAccessRequests'),
+        where('uid', '==', authUser.uid)
+      );
+      const existingRequestSnapshot = await getDocs(existingRequestQuery);
+      const pendingRequestExists = existingRequestSnapshot.docs.some((requestDoc) => (requestDoc.data().status || 'pending') === 'pending');
+
+      if (pendingRequestExists) {
+        setAccessStatus('A pending access request already exists. A super-admin will review it soon.');
+        return;
+      }
+
+      const now = new Date().toISOString();
+      await addDoc(collection(db, 'adminAccessRequests'), {
+        uid: authUser.uid,
+        email: authUser.email || '',
+        displayName: authUser.displayName || authUser.email || 'Admin user',
+        reason: requestReason.trim() || 'Please grant admin access for store management.',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now
+      });
+
+      setAccessStatus('Access request sent. A super-admin can approve it from the admin panel.');
+      setRequestReason('');
+    } catch (requestError) {
+      setError(requestError.message || 'Failed to send access request.');
+    }
   };
 
   const handleProductCreate = async (event) => {
@@ -550,7 +636,7 @@ const App = () => {
             <span className="theme-toggle__icon">{theme === 'light' ? '🌙' : '☀️'}</span>
           </button>
 
-          {authUser && (
+          {authUser && isAdmin && (
             <>
               <button
                 className={`nav-btn ${currentPage === 'products' ? 'is-active' : ''}`}
@@ -578,6 +664,17 @@ const App = () => {
           setLoginForm={setLoginForm}
           handleLogin={handleLogin}
           handleGoogleLogin={handleGoogleLogin}
+          error={error}
+        />
+      ) : !isAdmin ? (
+        <LoginPage
+          mode="request"
+          authUser={authUser}
+          accessStatus={accessStatus}
+          requestReason={requestReason}
+          setRequestReason={setRequestReason}
+          handleRequestAccess={handleRequestAccess}
+          handleLogout={handleLogout}
           error={error}
         />
       ) : currentPage === 'products' ? (
