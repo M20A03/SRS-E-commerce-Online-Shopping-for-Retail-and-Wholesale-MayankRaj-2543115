@@ -178,12 +178,30 @@
 }
 
 @media (max-width: 640px) {
+    .footer {
+        padding-top: 3rem;
+    }
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
 
+    .footer-bottom {
+        padding: 1.5rem 0;
+    }
+
     .footer-desc {
         max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-grid {
+        gap: 1.5rem;
+    }
+
+    .social-links {
+        flex-wrap: wrap;
     }
 }

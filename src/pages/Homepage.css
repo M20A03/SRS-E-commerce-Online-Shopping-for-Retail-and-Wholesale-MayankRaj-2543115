@@ -505,6 +505,15 @@
 }
 
 @media (max-width: 640px) {
+  .homepage__mesh-bg {
+    opacity: 0.5;
+  }
+
+  .homepage__hero {
+    padding-top: 3rem;
+    padding-bottom: 2.5rem;
+  }
+
   .homepage__promos { grid-template-columns: 1fr; }
   .homepage__hero-cta { flex-direction: column; width: 100%; }
   .homepage__hero-cta .btn { width: 100%; justify-content: center; }
@@ -517,6 +526,18 @@
 }
 
 @media (max-width: 480px) {
+  .homepage__hero-copy {
+    gap: 1rem;
+  }
+
+  .homepage__stat-chips {
+    justify-content: center;
+  }
+
+  .homepage__promo {
+    padding: 1.25rem 1rem;
+  }
+
   .hero-slider__stage { aspect-ratio: 4/5; }
   .hero-slider__content { padding: 1rem; }
   .hero-slider__title { font-size: 0.9rem; }
