@@ -1,8 +1,0 @@
-.git
-.gitignore
-.firebase
-node_modules
-dist
-admin-app/node_modules
-admin-app/dist
-**/.DS_Store

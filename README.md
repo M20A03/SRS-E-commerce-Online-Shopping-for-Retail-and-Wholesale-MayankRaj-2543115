@@ -52,45 +52,6 @@ This project now uses Firebase only for auth, database, and image uploads. No Cl
 3. In the admin app, uploads use Firebase Storage directly.
 4. Make sure the Firebase project’s Web App config is present in `src/firebase-config.js` and `admin-app/src/firebase.js`.
 
-### Firebase Admin Secret for Coolify
-
-1. Create a Firebase service account in the Firebase Console or Google Cloud Console.
-2. Download the JSON key file.
-3. In Coolify, add the JSON as a secret file or mounted secret.
-4. Set `GOOGLE_APPLICATION_CREDENTIALS` to the file path inside the container.
-5. Keep `NODE_ENV=production`, `PORT=8080`, and `CORS_ORIGIN=https://e-commerce-roshan-enterprises-dhn.web.app`.
-
-### Coolify Backend Deployment
-
-Deploy the root app on Coolify as a Docker-based service.
-
-The existing [Dockerfile](Dockerfile) builds the Node server and starts it with `npm start`, so Coolify can run it directly.
-
-Set these environment variables in Coolify:
-
-```bash
-PORT=8080
-NODE_ENV=production
-CORS_ORIGIN=https://e-commerce-roshan-enterprises-dhn.web.app
-```
-
-Also add the Firebase service-account JSON as a secret file and point `GOOGLE_APPLICATION_CREDENTIALS` at it.
-
-Coolify settings:
-
-```bash
-Build Command: npm install --omit=dev
-Start Command: npm start
-Port: 8080
-```
-
-After deployment, copy the Coolify backend URL and set it in the frontend build environment:
-
-```bash
-VITE_ORDER_API_URL=https://YOUR-COOLIFY-BACKEND-URL
-```
-
-If you only want to deploy the website, keep the frontend separate and point it to the Coolify backend URL.
 
 ## 📝 Project Context
 
