@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -20,9 +19,9 @@ const Footer = () => {
                             Your one-stop destination for premium products. Experience quality, elegance, and fast delivery all in one place.
                         </p>
                         <div className="social-links">
-                            <a href="#" className="social-icon" aria-label="Facebook"><Facebook size={20} /></a>
-                            <a href="#" className="social-icon" aria-label="Twitter"><Twitter size={20} /></a>
-                            <a href="#" className="social-icon" aria-label="Instagram"><Instagram size={20} /></a>
+                            <a href="#" className="social-icon" aria-label="Facebook">FB</a>
+                            <a href="#" className="social-icon" aria-label="Twitter">TW</a>
+                            <a href="#" className="social-icon" aria-label="Instagram">IG</a>
                         </div>
                     </div>
 
@@ -55,15 +54,15 @@ const Footer = () => {
                         <h4 className="footer-heading">Contact Us</h4>
                         <ul className="footer-contact">
                             <li>
-                                <MapPin size={18} className="contact-icon" />
+                                <span className="contact-icon">Location</span>
                                 <span><a href="https://maps.app.goo.gl/EgYHSHAsKaKmMsxT8" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>Roshan Enterprises</a></span>
                             </li>
                             <li>
-                                <Phone size={18} className="contact-icon" />
+                                <span className="contact-icon">Phone</span>
                                 <span>+91 7004634675</span>
                             </li>
                             <li>
-                                <Mail size={18} className="contact-icon" />
+                                <span className="contact-icon">Mail</span>
                                 <span>surendrakumardhn@gmail.com</span>
                             </li>
                             <li>

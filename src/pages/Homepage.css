@@ -157,6 +157,11 @@
   font-size: 1.25rem;
   font-weight: 800;
   font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  white-space: nowrap;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -473,6 +478,11 @@
   font-size: 2rem;
   font-weight: 800;
   font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  white-space: nowrap;
 }
 
 .w-full { width: 100%; }
@@ -510,6 +520,6 @@
   .hero-slider__stage { aspect-ratio: 4/5; }
   .hero-slider__content { padding: 1rem; }
   .hero-slider__title { font-size: 0.9rem; }
-  .hero-slider__price { font-size: 1rem; }
+  .hero-slider__price { font-size: 1.05rem; }
   .quickview-modal { padding: 1.25rem; }
 }

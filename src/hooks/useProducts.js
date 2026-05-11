@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase-config';
-import { categories as defaultCategories, products as fallbackProducts } from '../data/mockData';
 
 const useProducts = () => {
   const [products, setProducts] = useState(() => {
@@ -25,25 +24,20 @@ const useProducts = () => {
     const unsubscribe = onSnapshot(
       collection(db, 'products'),
       (snapshot) => {
-        if (snapshot.empty) {
-          setProducts(fallbackProducts);
-        } else {
-          const firestoreProducts = snapshot.docs.map((docItem) => ({
-            id: docItem.id,
-            ...docItem.data()
-          }));
-          setProducts(firestoreProducts);
-          // Update cache
-          localStorage.setItem('products_cache', JSON.stringify({
-            data: firestoreProducts,
-            timestamp: Date.now()
-          }));
-        }
+        const firestoreProducts = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data()
+        }));
+        setProducts(firestoreProducts);
+        localStorage.setItem('products_cache', JSON.stringify({
+          data: firestoreProducts,
+          timestamp: Date.now()
+        }));
         setIsLoading(false);
       },
       (error) => {
         console.error('Error loading products:', error);
-        setProducts((prev) => (prev.length === 0 ? fallbackProducts : prev));
+        setProducts([]);
         setIsLoading(false);
       }
     );
@@ -56,13 +50,13 @@ const useProducts = () => {
 
   const derivedCategories = useMemo(() => {
     const available = new Set(activeProducts.map((product) => product.category));
-    return defaultCategories.filter((category) => available.has(category.id));
+    return Array.from(available).map((categoryId) => ({ id: categoryId, name: categoryId }));
   }, [activeProducts]);
 
   return {
     products: activeProducts,
     allProducts: products,
-    categories: derivedCategories.length > 0 ? derivedCategories : defaultCategories,
+    categories: derivedCategories,
     isLoading
   };
 };

@@ -5,7 +5,6 @@ import { db } from '../firebase';
 export default function ProductsPage({
   error,
   status,
-  setStatus,
   authUser,
   isSuperAdmin,
   roleStatus,
@@ -23,19 +22,9 @@ export default function ProductsPage({
   toggleCarousel,
   productsLoading,
   loadProducts,
-  uploadImage,
-  createBulkProducts
+  uploadImage
 }) {
   const [productSearch, setProductSearch] = useState('');
-  const [bulkForm, setBulkForm] = useState({
-    files: [],
-    namePrefix: '',
-    price: '',
-    category: 'others',
-    description: '',
-    featured: false,
-    isActive: true
-  });
   const [imageSource, setImageSource] = useState('url');
   const [editingProductId, setEditingProductId] = useState('');
   const [accessRequests, setAccessRequests] = useState([]);
@@ -149,27 +138,6 @@ export default function ProductsPage({
       imageFiles: files,
       imageFile: files[0]
     }));
-  };
-
-  const handleBulkFilesChange = (event) => {
-    const selectedFiles = Array.from(event.target.files || []);
-    setBulkForm((prev) => ({ ...prev, files: selectedFiles }));
-  };
-
-  const handleBulkUpload = async (event) => {
-    event.preventDefault();
-    if (!bulkForm.files.length) return;
-    const uploadedCount = await createBulkProducts(bulkForm.files, bulkForm);
-    setStatus?.(`Uploaded ${uploadedCount} photo${uploadedCount === 1 ? '' : 's'} successfully.`);
-    setBulkForm({
-      files: [],
-      namePrefix: '',
-      price: '',
-      category: 'others',
-      description: '',
-      featured: false,
-      isActive: true
-    });
   };
 
   const handleApproveRequest = async (request) => {

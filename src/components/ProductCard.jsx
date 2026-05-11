@@ -1,16 +1,17 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, ShoppingCart, Sparkles, TriangleAlert } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
+    const navigate = useNavigate();
     const { addToCart } = useCart();
+    const { user } = useAuth();
     const cardRef = useRef(null);
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const MotionArticle = motion.article;
 
     const stock = useMemo(() => {
         if (typeof product.stock === 'number') {
@@ -25,8 +26,17 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
     const handleAddToCart = (e) => {
         e.preventDefault();
-        console.log('🛒 ProductCard - handleAddToCart called', { product: product.id });
+        console.log('🛒 ProductCard - handleAddToCart called', { product: product.id, user: user?.email || 'NOT LOGGED IN' });
         
+        // Check if user is logged in
+        if (!user) {
+            console.log('❌ No user logged in, redirecting to register');
+            // Redirect to signup page
+            navigate('/account', { state: { from: '/checkout', product: product.id, prompt: 'Please create an account to continue shopping.' } });
+            return;
+        }
+        
+        console.log('✅ User logged in, adding to cart:', product.id);
         addToCart(product);
         console.log('✅ Added to cart, calling onAddToCartFly');
         if (typeof onAddToCartFly === 'function') {
@@ -69,17 +79,14 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
     };
 
     return (
-        <MotionArticle
+        <article
             ref={cardRef}
             className="product-card glass-card glass-card--interactive"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            whileHover={{ y: -8 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 20 }}
         >
             <div className="product-card__visual">
                 <div className={`product-card__stock ${isLowStock ? 'product-card__stock--warning' : ''}`}>
-                    <Sparkles size={14} />
                     <span>{stock > 1 ? `${stock} in stock` : 'Last piece'}</span>
                 </div>
 
@@ -116,7 +123,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
                     })()}
                     <div className="product-card__hover-panel">
                         <button type="button" className="magnetic-button magnetic-button--soft" onClick={() => onQuickView?.(product)}>
-                            <Eye size={16} /> Quick view
+                            Quick view
                         </button>
                     </div>
                 </div>
@@ -127,7 +134,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
                     <span className="glass-chip">{product.category}</span>
                     {isLowStock && (
                         <span className="product-card__warning">
-                            <TriangleAlert size={14} /> Only {stock} left
+                            Only {stock} left
                         </span>
                     )}
                 </div>
@@ -147,12 +154,11 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
                         className="magnetic-button magnetic-button--primary product-card__add"
                         onClick={handleAddToCart}
                     >
-                        <ShoppingCart size={16} />
                         Add to cart
                     </button>
                 </div>
             </div>
-        </MotionArticle>
+        </article>
     );
 };
 

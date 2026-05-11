@@ -147,6 +147,7 @@
   transition: all var(--transition-fast);
   background: transparent;
   border: 1px solid transparent;
+  overflow: visible;
 }
 
 .glass-navbar__icon-button:hover {
@@ -169,14 +170,15 @@
 
 .glass-navbar__cart {
   position: relative;
+  overflow: visible;
 }
 
 .glass-navbar__badge {
   position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  min-width: 1.25rem;
-  height: 1.25rem;
+  top: -0.3rem;
+  right: -0.3rem;
+  min-width: 1.35rem;
+  height: 1.35rem;
   padding: 0 0.375rem;
   border-radius: 999px;
   display: grid;
@@ -184,8 +186,11 @@
   background-color: var(--accent-color);
   color: #ffffff;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1;
   border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-card) 82%, transparent), 0 8px 18px rgba(0, 0, 0, 0.18);
+  z-index: 2;
 }
 
 [data-theme="dark"] .glass-navbar__badge {
@@ -195,6 +200,22 @@
 .glass-navbar__menu-button {
   display: none;
 }
+
+.glass-navbar__menu-lines {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  width: 16px;
+  height: 14px;
+}
+
+.glass-navbar__menu-lines span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
 
 .glass-navbar__mobile-panel {
   display: none;
@@ -399,6 +420,8 @@
 
   .glass-navbar__menu-button {
     display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .glass-navbar__mobile-panel {
@@ -625,7 +648,7 @@
 
   .glass-navbar__menu-button {
     display: flex !important;
-    width: 2.25rem;
+    width: 2rem;
     height: 2.25rem;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -633,12 +656,12 @@
   }
 
   .glass-navbar__badge {
-    min-width: 1.125rem;
-    height: 1.125rem;
-    font-size: 0.65rem;
-    padding: 0 0.25rem;
-    top: -0.375rem;
-    right: -0.375rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.66rem;
+    padding: 0 0.28rem;
+    top: -0.45rem;
+    right: -0.45rem;
   }
 
   .glass-navbar__mobile-link,
@@ -703,3 +726,4 @@
     font-size: 0.8125rem;
   }
 }
+  }

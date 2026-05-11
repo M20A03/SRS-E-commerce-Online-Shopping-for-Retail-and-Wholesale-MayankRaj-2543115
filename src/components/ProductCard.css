@@ -290,6 +290,11 @@
   font-size: 1.2rem;
   font-weight: 800;
   font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  white-space: nowrap;
   background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -329,7 +334,7 @@
 @media (max-width: 480px) {
   .product-card__content { padding: 0.875rem 1rem 1rem; gap: 0.5rem; }
   .product-card__title { font-size: 0.875rem; }
-  .product-card__price { font-size: 1.05rem; }
+  .product-card__price { font-size: 1.1rem; }
   .product-card__add { padding: 0.5rem 0.875rem; font-size: 0.78rem; }
   .product-card__description { display: none; }
 }

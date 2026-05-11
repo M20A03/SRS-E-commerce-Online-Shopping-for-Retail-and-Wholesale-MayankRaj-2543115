@@ -19,7 +19,8 @@ import {
   updateDoc,
   where
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { auth, db, storage } from './firebase';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
@@ -90,10 +91,9 @@ const App = () => {
 
   const mapGoogleError = (error) => {
     const code = error?.code || '';
-    const host = typeof window !== 'undefined' ? window.location.host : '';
 
     if (code === 'auth/unauthorized-domain') {
-      return `Google login is blocked for this domain (${host}). Add it in Firebase Authentication -> Settings -> Authorized domains.`;
+      return 'Google sign-in is not available for this site. Ask a super-admin to check the sign-in configuration.';
     }
 
     if (code === 'auth/popup-blocked') {
@@ -134,151 +134,17 @@ const App = () => {
   const uploadImage = async (file) => {
     if (!file) return null;
 
-    const fileToDataUrl = () => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ''));
-      reader.onerror = () => reject(new Error('Unable to read image file.'));
-      reader.readAsDataURL(file);
-    });
-
-    const fileToBase64 = () => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = String(reader.result || '');
-        // result is like "data:<mime>;base64,<data>" — strip the prefix
-        const comma = result.indexOf(',');
-        resolve(comma >= 0 ? result.slice(comma + 1) : result);
-      };
-      reader.onerror = () => reject(new Error('Unable to read image file.'));
-      reader.readAsDataURL(file);
-    });
-
-    const estimateDataUrlBytes = (dataUrl) => {
-      const base64 = String(dataUrl || '').split(',')[1] || '';
-      return Math.floor((base64.length * 3) / 4);
-    };
-
-    const optimizeImageForFirestore = async () => {
-      // Keep stored data small enough to avoid Firestore document size limit.
-      const MAX_DIMENSION = 1280;
-      const TARGET_MAX_BYTES = 350 * 1024;
-
-      if (!file.type.startsWith('image/')) {
-        return fileToDataUrl();
-      }
-
-      const imageSrc = await fileToDataUrl();
-
-      const img = await new Promise((resolve, reject) => {
-        const instance = new Image();
-        instance.onload = () => resolve(instance);
-        instance.onerror = () => reject(new Error('Unable to process image file.'));
-        instance.src = imageSrc;
-      });
-
-      const ratio = Math.min(1, MAX_DIMENSION / Math.max(img.width || 1, img.height || 1));
-      const width = Math.max(1, Math.round((img.width || 1) * ratio));
-      const height = Math.max(1, Math.round((img.height || 1) * ratio));
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return imageSrc;
-      }
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      let quality = mimeType === 'image/png' ? undefined : 0.86;
-      let output = canvas.toDataURL(mimeType, quality);
-
-      // For jpeg/webp-like files, reduce quality until near target size.
-      while (mimeType !== 'image/png' && estimateDataUrlBytes(output) > TARGET_MAX_BYTES && quality > 0.45) {
-        quality -= 0.08;
-        output = canvas.toDataURL(mimeType, quality);
-      }
-
-      return output;
-    };
+    const sanitizeFileName = (filename) => String(filename || 'image').replace(/[^a-zA-Z0-9._-]+/g, '_');
 
     try {
-      const gcsUploadEndpoint = import.meta.env.VITE_GCS_UPLOAD_ENDPOINT;
-      const gcsProxyEndpoint = import.meta.env.VITE_GCS_UPLOAD_PROXY_ENDPOINT;
-
-      // If a server-side proxy endpoint is configured, use it (avoids GCS CORS issues)
-      if (gcsProxyEndpoint) {
-        const base64 = await fileToBase64();
-        const proxyRes = await fetch(gcsProxyEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: file.name, contentType: file.type || 'application/octet-stream', base64 })
-        });
-
-        const proxyData = await proxyRes.json();
-        if (!proxyRes.ok) throw new Error(proxyData?.error || 'Proxy upload failed');
-        return proxyData.publicUrl || '';
-      }
-
-      if (gcsUploadEndpoint) {
-        const prepareResponse = await fetch(gcsUploadEndpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: file.name,
-            contentType: file.type || 'application/octet-stream'
-          })
-        });
-
-        const prepareData = await prepareResponse.json();
-        if (!prepareResponse.ok) {
-          throw new Error(prepareData?.error || 'Failed to prepare Google Cloud Storage upload.');
-        }
-
-        const uploadResponse = await fetch(prepareData.uploadUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream'
-          },
-          body: file
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error('Google Cloud Storage upload failed.');
-        }
-
-        return prepareData.publicUrl || prepareData.downloadUrl || '';
-      }
-
-      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-      if (cloudName && uploadPreset) {
-        const form = new FormData();
-        form.append('file', file);
-        form.append('upload_preset', uploadPreset);
-
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-          method: 'POST',
-          body: form
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error?.message || 'Cloudinary upload failed');
-        return data.secure_url;
-      }
-
-      // No cloud service configured: embed a compressed image directly as a data URL.
-      // This works without Storage/Billing, but documents still have size limits.
-      const dataUrl = await optimizeImageForFirestore();
-      if (estimateDataUrlBytes(dataUrl) > 700 * 1024) {
-        throw new Error('Image is too large. Please use a smaller image (recommended under 1 MB) or a URL upload.');
-      }
-      return dataUrl;
+      const storagePath = `products/${Date.now()}_${sanitizeFileName(file.name)}`;
+      const uploadedRef = ref(storage, storagePath);
+      const snapshot = await uploadBytes(uploadedRef, file, {
+        contentType: file.type || 'application/octet-stream'
+      });
+      return await getDownloadURL(snapshot.ref);
     } catch (uploadError) {
-      throw new Error(uploadError.message || 'Image upload failed.');
+      throw new Error(uploadError?.message || 'Image upload failed. Ensure Firebase Storage is enabled and your client is configured.');
     }
   };
 

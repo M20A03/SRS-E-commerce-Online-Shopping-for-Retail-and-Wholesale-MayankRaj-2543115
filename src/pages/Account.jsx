@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase-config';
-import { User, Mail, Phone, ShoppingBag, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, ShoppingBag, CheckCircle, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
 
 const Account = () => {
-    const { user, updateProfile, logout } = useAuth();
+    const { user, updateProfile, logout, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const checkoutPrompt = location.state?.prompt || 'Please create an account to continue checkout.';
+    const returnTo = location.state?.from || '/checkout';
 
     const splitName = (value = '') => {
         const normalized = String(value || '').trim();
@@ -21,26 +24,79 @@ const Account = () => {
     const displayLastName = user?.lastName || derivedName.lastName;
     const profileTitle = `${displayFirstName} ${displayLastName}`.trim() || user?.displayName || 'Customer';
 
-    const [formData, setFormData] = useState(() => ({
-        firstName: user?.firstName || derivedName.firstName || '',
-        lastName: user?.lastName || derivedName.lastName || '',
-        contact: user?.contact || '',
-        email: user?.email || '',
-    }));
+    const [formOverrides, setFormOverrides] = useState({});
 
     const [isEditing, setIsEditing] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [accessRequest, setAccessRequest] = useState({ reason: '' });
     const [requestState, setRequestState] = useState({ loading: false, text: '', type: '' });
+    const [authState, setAuthState] = useState({ loading: false, text: '', type: '' });
 
-    useEffect(() => {
-        if (!user) navigate('/');
-    }, [user, navigate]);
+    const formData = {
+        firstName: formOverrides.firstName ?? user?.firstName ?? derivedName.firstName ?? '',
+        lastName: formOverrides.lastName ?? user?.lastName ?? derivedName.lastName ?? '',
+        contact: formOverrides.contact ?? user?.contact ?? '',
+        email: formOverrides.email ?? user?.email ?? '',
+    };
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <div className="container section animate-fade-in">
+                <div className="account-guest card" style={{ maxWidth: '760px', margin: '0 auto', padding: '2.5rem' }}>
+                    <div className="flex-col items-center text-center gap-4" style={{ maxWidth: '620px', margin: '0 auto' }}>
+                        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--gradient-accent)', display: 'grid', placeItems: 'center', color: '#fff', boxShadow: 'var(--shadow-glow)' }}>
+                            <Sparkles size={32} />
+                        </div>
+                        <p className="glass-chip glass-chip--accent" style={{ margin: 0 }}>Secure sign-in</p>
+                        <h1 className="heading-1 mb-2">Continue with your account</h1>
+                        <p className="text-muted" style={{ maxWidth: '540px', fontSize: '1.05rem', lineHeight: 1.7 }}>
+                            {checkoutPrompt}
+                        </p>
+                        <div className="card" style={{ width: '100%', marginTop: '1rem', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
+                            <h2 className="heading-3 mb-3">What you get</h2>
+                            <ul className="text-muted" style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.8, textAlign: 'left' }}>
+                                <li>Continue to checkout without losing your cart.</li>
+                                <li>Track orders and payment history.</li>
+                                <li>Request admin access from the same profile later.</li>
+                            </ul>
+                        </div>
+                        {authState.text && (
+                            <div style={{
+                                width: '100%',
+                                padding: '0.9rem 1rem',
+                                borderRadius: 'var(--radius-md)',
+                                backgroundColor: authState.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: authState.type === 'success' ? 'var(--success-color)' : '#ef4444',
+                                border: `1px solid ${authState.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`
+                            }}>
+                                {authState.text}
+                            </div>
+                        )}
+                        <button
+                            className="btn btn-primary"
+                            style={{ minWidth: '220px' }}
+                            disabled={authState.loading}
+                            onClick={async () => {
+                                setAuthState({ loading: true, text: '', type: '' });
+                                const result = await loginWithGoogle();
+                                if (result.success) {
+                                    setAuthState({ loading: false, text: 'Signed in successfully. Redirecting...', type: 'success' });
+                                    navigate(returnTo, { replace: true });
+                                } else {
+                                    setAuthState({ loading: false, text: 'Sign-in could not be completed. Please try again.', type: 'error' });
+                                }
+                            }}
+                        >
+                            {authState.loading ? 'Signing in...' : 'Continue with Google'} <ArrowRight size={18} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.id]: e.target.value });
+        setFormOverrides((prev) => ({ ...prev, [e.target.id]: e.target.value }));
     };
 
     const handleSubmit = async (e) => {
@@ -85,13 +141,9 @@ const Account = () => {
         }
     };
 
-
-
     return (
         <div className="container section animate-fade-in">
             <div className="grid grid-cols-4 gap-8">
-
-                {/* Sidebar */}
                 <div className="card" style={{ padding: '2rem', height: 'fit-content' }}>
                     <div className="flex-col items-center justify-center text-center mb-6">
                         {user?.photoURL ? (
@@ -123,7 +175,6 @@ const Account = () => {
                     </div>
                 </div>
 
-                {/* Main Content */}
                 <div className="card" style={{ gridColumn: 'span 3', padding: '2.5rem' }}>
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="heading-2">Account Details</h2>
@@ -196,7 +247,7 @@ const Account = () => {
 
                         {isEditing && (
                             <div className="flex justify-end gap-4 mt-4 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-                                <button type="button" className="btn btn-outline" onClick={() => { setIsEditing(false); setFormData({ firstName: displayFirstName, lastName: displayLastName, contact: user?.contact || '', email: user?.email || '' }); setMessage({}); }}>
+                                <button type="button" className="btn btn-outline" onClick={() => { setIsEditing(false); setFormOverrides({}); setMessage({}); }}>
                                     Cancel
                                 </button>
                                 <button type="submit" className="btn btn-primary">

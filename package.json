@@ -8,20 +8,15 @@
     "build": "vite build",
     "build:admin": "cd admin-app && npm run build",
     "build:all": "npm run build && npm run build:admin",
-    "gcs-server": "node server/gcs-upload-server.js",
+    "start": "node server/gcs-upload-server.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.16.0",
     "firebase": "^12.10.0",
     "firebase-admin": "^13.8.0",
-    "framer-motion": "^12.38.0",
-    "lucide-react": "^0.576.0",
-    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {

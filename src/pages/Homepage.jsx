@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap, ChevronLeft, ChevronRight, Star, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import './Homepage.css';
@@ -115,7 +116,9 @@ const HeroSlider = ({ products, onAddToCart }) => {
 
 /* ─── Main Homepage ─── */
 const Homepage = ({ onOpenCart }) => {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const { products, categories, isLoading: isProductsLoading } = useProducts();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,11 +128,18 @@ const Homepage = ({ onOpenCart }) => {
   const itemsPerPage = 12;
 
   const handleAddToCart = (product) => {
+    if (!user) {
+      navigate('/account', { state: { from: '/checkout', product: product.id, prompt: 'Please create an account to continue shopping.' } });
+      return;
+    }
     addToCart(product);
   };
 
   // Visual-only callback for ProductCard fly animation — ProductCard already calls addToCart internally
-  const handleCartFly = () => {
+  const handleCartFly = (product) => {
+    if (!user) {
+      navigate('/account', { state: { from: '/checkout', product: product.id, prompt: 'Please create an account to continue shopping.' } });
+    }
     // No addToCart here — ProductCard's own handler already did it
   };
 
@@ -141,10 +151,7 @@ const Homepage = ({ onOpenCart }) => {
   const carouselProducts = useMemo(() => homepageProducts.filter((p) => p.showInCarousel === true).slice(0, 6), [homepageProducts]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearchQuery(searchInput.trim().toLowerCase());
-      setCurrentPage(1);
-    }, 300);
+    const timer = setTimeout(() => setSearchQuery(searchInput.trim().toLowerCase()), 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
@@ -158,21 +165,12 @@ const Homepage = ({ onOpenCart }) => {
   }, [activeCategory, searchQuery, homepageProducts]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  
-  const visibleProducts = useMemo(() => {
-    const startIdx = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(startIdx, startIdx + itemsPerPage);
-  }, [filteredProducts, currentPage]);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const visibleProducts = filteredProducts.slice(startIdx, startIdx + itemsPerPage);
 
   const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
   const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
   const handlePageJump = (page) => { if (page >= 1 && page <= totalPages) setCurrentPage(page); };
-
-  // Handlers to reset page on filter change
-  const handleCategorySelect = (catId) => {
-    setActiveCategory(catId);
-    setCurrentPage(1);
-  };
 
   const statChips = [
     { icon: <Package size={14} />, label: `${products.length}+ Products` },
@@ -295,16 +293,19 @@ const Homepage = ({ onOpenCart }) => {
                 className="homepage__search-input"
                 placeholder="Search products..."
                 value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
             <div className="homepage__filters">
-              <button className={`homepage__filter ${activeCategory === 'all' ? 'is-active' : ''}`} onClick={() => handleCategorySelect('all')}>All</button>
+              <button className={`homepage__filter ${activeCategory === 'all' ? 'is-active' : ''}`} onClick={() => { setActiveCategory('all'); setCurrentPage(1); }}>All</button>
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   className={`homepage__filter ${activeCategory === cat.id ? 'is-active' : ''}`}
-                  onClick={() => handleCategorySelect(cat.id)}
+                  onClick={() => { setActiveCategory(cat.id); setCurrentPage(1); }}
                 >
                   {cat.name}
                 </button>

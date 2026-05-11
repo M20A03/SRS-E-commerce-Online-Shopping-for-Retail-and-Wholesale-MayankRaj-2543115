@@ -3,37 +3,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isAdmin() {
-      return request.auth != null
+      return isSignedIn()
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     function isSuperAdmin() {
-      return request.auth != null
+      return isSignedIn()
         && exists(/databases/$(database)/documents/superAdmins/$(request.auth.uid));
+    }
+
+    function isValidUserDoc() {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'firstName', 'lastName', 'photoURL', 'contact', 'createdAt', 'updatedAt', 'isAdmin'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.isAdmin == false;
+    }
+
+    function isValidOrderDoc() {
+      return request.resource.data.keys().hasOnly([
+          'id', 'userId', 'date', 'updatedAt', 'estimatedDeliveryDate', 'estimatedDeliveryDaysMin', 'estimatedDeliveryDaysMax',
+          'items', 'subtotal', 'shippingFee', 'tax', 'total', 'status', 'paymentMethod', 'paymentStatus', 'paymentData', 'customer'
+        ])
+        && request.resource.data.userId == request.auth.uid;
+    }
+
+    function isValidAccessRequestDoc() {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'reason', 'status', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending';
     }
 
     // Users collection - only authenticated users can read/write their own data
     match /users/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && isValidUserDoc();
+      allow update: if (isSignedIn() && request.auth.uid == userId && isValidUserDoc())
         || (isSuperAdmin()
           && request.resource.data.diff(resource.data).changedKeys().hasOnly(['isAdmin', 'updatedAt']));
-      allow create: if request.auth.uid == request.resource.data.uid;
+      allow delete: if isSuperAdmin();
     }
 
     // Super-admin marker collection (manual bootstrap in Firebase Console)
     match /superAdmins/{userId} {
-      allow read: if request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
       allow write: if false;
     }
 
     // Orders collection - users can read/write their own orders, admins can read all and update status
     match /orders/{orderId} {
-      allow read: if request.auth.uid == resource.data.userId || isAdmin();
-      allow write: if request.auth.uid == request.resource.data.userId && request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId && request.auth != null;
-      allow update: if isAdmin() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['status', 'updatedAt']);
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if isSignedIn() && isValidOrderDoc();
+      allow update: if (isSignedIn() && request.auth.uid == resource.data.userId && request.resource.data.diff(resource.data).changedKeys().hasOnly(['updatedAt']))
+        || (isAdmin() && request.resource.data.diff(resource.data).changedKeys().hasOnly(['status', 'updatedAt']));
+      allow delete: if isSuperAdmin();
     }
 
     // Products collection - everyone can read, only admins can write
@@ -44,17 +74,14 @@ service cloud.firestore {
 
     // Cart collection - only authenticated users can read/write their own cart
     match /carts/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId;
-      allow create: if request.auth.uid == userId;
+      allow read, create, update, delete: if isSignedIn() && request.auth.uid == userId;
     }
 
     // Admin access requests - customers can create their own request, super-admins can manage them
     match /adminAccessRequests/{requestId} {
-      allow read: if request.auth != null
+      allow read: if isSignedIn()
         && (resource.data.uid == request.auth.uid || isAdmin() || isSuperAdmin());
-      allow create: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && isValidAccessRequestDoc();
       allow update, delete: if isSuperAdmin();
     }
 

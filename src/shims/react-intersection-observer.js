@@ -1,0 +1,1 @@
+export const useInView = () => ({ ref: () => {}, inView: true });

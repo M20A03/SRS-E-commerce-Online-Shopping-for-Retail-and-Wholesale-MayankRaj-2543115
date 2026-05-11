@@ -125,9 +125,9 @@ const UPI_ID = 'roshan.enterprises@okhdfcbank'; // Live UPI ID
 
 ## Troubleshooting
 
-**QR code not displaying?**
+**UPI panel not displaying?**
 - Check browser console for errors
-- Ensure `qrcode.react` is installed: `npm list qrcode.react`
+- Ensure the checkout screen is using the current `UPIPayment.jsx` component
 
 **UPI link not working?**
 - Verify UPI ID format is correct

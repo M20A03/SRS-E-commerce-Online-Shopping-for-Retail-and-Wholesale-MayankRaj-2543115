@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getToken } from 'firebase/app-check';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { addDoc, collection } from 'firebase/firestore';
-import { db } from '../firebase-config';
+import { useToast } from '../context/ToastContext';
+import { appCheck, auth } from '../firebase-config';
 import { CreditCard, Smartphone, HandCoins, CheckCircle } from 'lucide-react';
 import UPIPayment from '../components/UPIPayment';
 import './Checkout.css';
 
+const ORDER_API_BASE_URL = import.meta.env.VITE_ORDER_API_URL || 'http://localhost:8787';
+
 const Checkout = () => {
     const { cart, getCartTotal, clearCart } = useCart();
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+    const { addToast } = useToast();
     const navigate = useNavigate();
 
     const [paymentMethod, setPaymentMethod] = useState('card');
@@ -26,16 +30,32 @@ const Checkout = () => {
         shippingAddress: ''
     });
 
-    const subtotal = getCartTotal();
+    const subtotal = Number(getCartTotal().toFixed(2));
     const shippingFee = subtotal >= 500 ? 0 : 49;
-    const tax = subtotal * 0.05;
-    const finalTotal = subtotal + shippingFee + tax;
+    const tax = Number((subtotal * 0.05).toFixed(2));
+    const finalTotal = Number((subtotal + shippingFee + tax).toFixed(2));
 
     useEffect(() => {
-        if (cart.length === 0 && !orderComplete) {
+        if (loading || orderComplete) {
+            return;
+        }
+
+        if (!user && cart.length > 0) {
+            addToast('Please create an account before checkout.', 'info');
+            navigate('/account', {
+                replace: true,
+                state: {
+                    from: '/checkout',
+                    prompt: 'Please create an account to continue checkout.'
+                }
+            });
+            return;
+        }
+
+        if (cart.length === 0) {
             navigate('/cart');
         }
-    }, [cart.length, navigate, orderComplete]);
+    }, [addToast, cart.length, loading, navigate, orderComplete, user]);
 
     useEffect(() => {
         if (orderComplete) {
@@ -49,6 +69,41 @@ const Checkout = () => {
         contact: customerInfo.contact || user?.contact || '',
         email: customerInfo.email || user?.email || '',
         shippingAddress: customerInfo.shippingAddress || ''
+    };
+
+    const submitOrder = async (paymentMethodToSubmit, paymentData = null) => {
+        if (!auth.currentUser) {
+            throw new Error('Your sign-in session expired. Please sign in again.');
+        }
+
+        const idToken = await auth.currentUser.getIdToken();
+        const appCheckHeader = appCheck ? await getToken(appCheck, false) : null;
+        const response = await fetch(`${ORDER_API_BASE_URL}/api/orders/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${idToken}`,
+                ...(appCheckHeader?.token ? { 'X-Firebase-AppCheck': appCheckHeader.token } : {})
+            },
+            body: JSON.stringify({
+                paymentMethod: paymentMethodToSubmit,
+                paymentData,
+                customer: resolvedCustomerInfo,
+                items: cart.map((item) => ({
+                    id: item.id,
+                    quantity: item.quantity
+                })),
+                acceptTerms: true
+            })
+        });
+
+        const responseData = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(responseData.error || 'Failed to create order.');
+        }
+
+        return responseData;
     };
 
     const handleInfoChange = (event) => {
@@ -69,46 +124,20 @@ const Checkout = () => {
             return;
         }
 
+        if (Math.abs(Number(paymentData?.amount || 0) - finalTotal) > 0.01) {
+            setFormError('Payment amount must match the exact checkout total.');
+            return;
+        }
+
         setIsProcessing(true);
 
         try {
-            const now = new Date();
-            const estimatedDeliveryDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
-
-            const newOrder = {
-                id: `ORD-${Math.floor(Math.random() * 1000000)}`,
-                date: now.toISOString(),
-                updatedAt: now.toISOString(),
-                estimatedDeliveryDate,
-                estimatedDeliveryDaysMin: 2,
-                estimatedDeliveryDaysMax: 4,
-                items: [...cart],
-                subtotal,
-                shippingFee,
-                tax,
-                total: finalTotal,
-                status: 'Pending Payment Verification',
-                paymentMethod: 'upi',
-                paymentStatus: 'Pending (UPI Payment)',
-                paymentData: {
-                    upiId: paymentData.upiId,
-                    transactionId: paymentData.transactionId,
-                    timestamp: paymentData.timestamp
-                },
-                customer: resolvedCustomerInfo
-            };
-
-            if (user?.id) {
-                await addDoc(collection(db, 'orders'), {
-                    ...newOrder,
-                    userId: user.id,
-                    userEmail: user.email || ''
-                });
-            } else {
-                const existingOrders = JSON.parse(localStorage.getItem('luxe_orders') || '[]');
-                const orderOwner = `guest:${resolvedCustomerInfo.email}`;
-                localStorage.setItem('luxe_orders', JSON.stringify([[orderOwner, newOrder], ...existingOrders]));
-            }
+            await submitOrder('upi', {
+                amount: finalTotal,
+                upiId: paymentData.upiId,
+                transactionId: paymentData.transactionId,
+                timestamp: paymentData.timestamp
+            });
 
             setOrderComplete(true);
             clearCart();
@@ -134,46 +163,15 @@ const Checkout = () => {
             return;
         }
 
+        if (paymentMethod === 'upi') {
+            setFormError('Please complete the UPI payment section above and confirm the payment there.');
+            return;
+        }
+
         setIsProcessing(true);
 
         try {
-            const isCashOnDelivery = paymentMethod === 'cod';
-            const isUPI = paymentMethod === 'upi';
-            const paymentStatus = isCashOnDelivery ? 'Pending (Cash on Delivery)' : isUPI ? 'Pending (UPI Payment)' : 'Pending';
-            const orderStatus = isCashOnDelivery ? 'Confirmed' : isUPI ? 'Pending Payment Verification' : 'Processing';
-            const now = new Date();
-            const estimatedDeliveryDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
-
-            // Save order payload with delivery ETA
-            const newOrder = {
-                id: `ORD-${Math.floor(Math.random() * 1000000)}`,
-                date: now.toISOString(),
-                updatedAt: now.toISOString(),
-                estimatedDeliveryDate,
-                estimatedDeliveryDaysMin: 2,
-                estimatedDeliveryDaysMax: 4,
-                items: [...cart],
-                subtotal,
-                shippingFee,
-                tax,
-                total: finalTotal,
-                status: orderStatus,
-                paymentMethod,
-                paymentStatus,
-                customer: resolvedCustomerInfo
-            };
-
-            if (user?.id) {
-                await addDoc(collection(db, 'orders'), {
-                    ...newOrder,
-                    userId: user.id,
-                    userEmail: user.email || ''
-                });
-            } else {
-                const existingOrders = JSON.parse(localStorage.getItem('luxe_orders') || '[]');
-                const orderOwner = `guest:${resolvedCustomerInfo.email}`;
-                localStorage.setItem('luxe_orders', JSON.stringify([[orderOwner, newOrder], ...existingOrders]));
-            }
+            await submitOrder(paymentMethod);
 
             setOrderComplete(true);
             clearCart();
@@ -251,7 +249,7 @@ const Checkout = () => {
                             <label className="label">Shipping Address</label>
                             <textarea className="input" rows="3" name="shippingAddress" value={resolvedCustomerInfo.shippingAddress} onChange={handleInfoChange} placeholder="Enter your full shipping address..." required></textarea>
                         </div>
-                        {!user && <p className="checkout-hint">Guest checkout enabled: you can place order without creating an account.</p>}
+                        {!user && <p className="checkout-hint">You will be asked to create an account before you can place the order.</p>}
                     </div>
 
                     {/* Payment Method */}
@@ -322,8 +320,9 @@ const Checkout = () => {
 
                         {paymentMethod === 'upi' && (
                             <div className="payment-form animate-fade-in">
-                                <UPIPayment 
-                                    amount={finalTotal} 
+                                <UPIPayment
+                                    amount={finalTotal}
+                                    lockedAmount={finalTotal}
                                     customerName={`${resolvedCustomerInfo.firstName} ${resolvedCustomerInfo.lastName}`}
                                     onPaymentConfirm={handleUPIPaymentConfirm}
                                 />

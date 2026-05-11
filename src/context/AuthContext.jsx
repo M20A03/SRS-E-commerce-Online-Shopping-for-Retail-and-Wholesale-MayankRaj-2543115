@@ -28,18 +28,17 @@ const splitName = (name = '') => {
 export const AuthProvider = ({ children }) => {
     const mapAuthError = useCallback((error) => {
         const code = error?.code || '';
-        const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
         if (code === 'auth/unauthorized-domain') {
-            return `Google login blocked for this domain (${origin}). Add this exact domain under Firebase Authentication → Settings → Authorized domains, then retry.`;
+            return 'Sign-in is not available from this site. Please try again from the approved app domain.';
         }
         if (code === 'auth/popup-blocked') {
-            return 'Popup was blocked by browser. Allow popups for this site and try again.';
+            return 'Sign-in popup was blocked. Allow popups and try again.';
         }
         if (code === 'auth/popup-closed-by-user') {
-            return 'Google sign-in popup was closed before completion.';
+            return 'Sign-in was closed before completion.';
         }
-        return error?.message || 'Authentication failed.';
+        return 'Authentication failed. Please try again.';
     }, []);
 
     const [user, setUser] = useState(null);
@@ -150,7 +149,7 @@ export const AuthProvider = ({ children }) => {
     const updateProfile = async (updatedData) => {
         try {
             if (!auth.currentUser) {
-                return { success: false, error: 'No user logged in' };
+                return { success: false, error: 'No user is logged in.' };
             }
             if (updatedData.displayName) {
                 await firebaseUpdateProfile(auth.currentUser, { displayName: updatedData.displayName });
@@ -161,8 +160,8 @@ export const AuthProvider = ({ children }) => {
             }, { merge: true });
             setUser((prev) => ({ ...prev, ...updatedData }));
             return { success: true };
-        } catch (error) {
-            return { success: false, error: error.message };
+        } catch {
+            return { success: false, error: 'Unable to update profile right now.' };
         }
     };
 
@@ -171,8 +170,8 @@ export const AuthProvider = ({ children }) => {
             await signOut(auth);
             setUser(null);
             return { success: true };
-        } catch (error) {
-            return { success: false, error: error.message };
+        } catch {
+            return { success: false, error: 'Logout failed. Please try again.' };
         }
     };
 

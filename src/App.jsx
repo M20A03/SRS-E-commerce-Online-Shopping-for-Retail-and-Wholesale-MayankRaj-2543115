@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 
 // Global Contexts
 import { AuthProvider } from './context/AuthContext';
@@ -36,16 +35,8 @@ const AppContent = () => {
     return savedTheme === 'light' ? 'light' : 'dark';
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [disableRouteMotion, setDisableRouteMotion] = useState(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return false;
-    }
-    return window.matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)').matches;
-  });
   const cartButtonRef = useRef(null);
   const location = useLocation();
-  const MotionDiv = motion.div;
-
   const prefetchedRoutes = useMemo(() => ['/categories', '/cart', '/checkout', '/account'], []);
 
   useEffect(() => {
@@ -69,27 +60,8 @@ const AppContent = () => {
   }, [prefetchedRoutes]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return undefined;
-    }
-    const mediaQuery = window.matchMedia('(max-width: 768px), (prefers-reduced-motion: reduce)');
-    const applyRouteMotionPreference = () => {
-      setDisableRouteMotion(mediaQuery.matches);
-    };
-    applyRouteMotionPreference();
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', applyRouteMotionPreference);
-    } else {
-      mediaQuery.addListener(applyRouteMotionPreference);
-    }
-    return () => {
-      if (typeof mediaQuery.removeEventListener === 'function') {
-        mediaQuery.removeEventListener('change', applyRouteMotionPreference);
-      } else {
-        mediaQuery.removeListener(applyRouteMotionPreference);
-      }
-    };
-  }, []);
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -110,49 +82,33 @@ const AppContent = () => {
 
       <main className="main-content">
         <Suspense fallback={<div className="spinner">Loading...</div>}>
-          <AnimatePresence mode="wait">
-            <MotionDiv
-              key={location.pathname}
-              className="route-transition-shell"
-              initial={disableRouteMotion ? false : { opacity: 0, y: 24, scale: 0.99 }}
-              animate={disableRouteMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-              exit={disableRouteMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 0.995 }}
-              transition={disableRouteMotion ? { duration: 0.18, ease: 'linear' } : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Routes location={location}>
-                <Route
-                  path="/"
-                  element={<Homepage onOpenCart={() => setIsCartOpen(true)} cartButtonRef={cartButtonRef} />}
-                />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route
-                  path="/account"
-                  element={
-                    <ProtectedRoute>
-                      <Account />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route
-                  path="/orders"
-                  element={
-                    <ProtectedRoute>
-                      <OrderHistory />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<ContactUs />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/shipping-policy" element={<ShippingPolicy />} />
-                <Route path="/return-policy" element={<ReturnPolicy />} />
-              </Routes>
-            </MotionDiv>
-          </AnimatePresence>
+          <div className="route-transition-shell">
+            <Routes location={location}>
+              <Route
+                path="/"
+                element={<Homepage onOpenCart={() => setIsCartOpen(true)} cartButtonRef={cartButtonRef} />}
+              />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute>
+                    <OrderHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/shipping-policy" element={<ShippingPolicy />} />
+              <Route path="/return-policy" element={<ReturnPolicy />} />
+            </Routes>
+          </div>
         </Suspense>
       </main>
 

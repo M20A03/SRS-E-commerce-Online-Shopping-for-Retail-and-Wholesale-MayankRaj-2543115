@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import './Cart.css';
 
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
+    const { user } = useAuth();
+    const { addToast } = useToast();
     const navigate = useNavigate();
     const subtotal = getCartTotal();
     const shippingFee = subtotal >= 500 ? 0 : 49;
@@ -16,7 +19,7 @@ const Cart = () => {
         return (
             <div className="container section flex-col items-center justify-center animate-fade-in" style={{ minHeight: '60vh', textAlign: 'center' }}>
                 <div style={{ padding: '2rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '50%', marginBottom: '2rem' }}>
-                    <ShoppingBag size={64} color="var(--text-secondary)" />
+                    Cart
                 </div>
                 <h2 className="heading-2 mb-4">Your cart is empty</h2>
                 <p className="text-muted mb-6">Looks like you haven't added any premium items to your cart yet.</p>
@@ -54,7 +57,7 @@ const Cart = () => {
                                         <div>
                                             <h4 className="cart-item-name"><Link to={`/categories?cat=${item.category}`}>{item.name}</Link></h4>
                                             <button className="cart-item-remove" onClick={() => removeFromCart(item.id)}>
-                                                <Trash2 size={14} /> Remove
+                                                Remove
                                             </button>
                                         </div>
                                     </div>
@@ -68,11 +71,11 @@ const Cart = () => {
                                     <div className="col-span-2 flex justify-center">
                                         <div className="quantity-control">
                                             <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
-                                                <Minus size={14} />
+                                                -
                                             </button>
                                             <span>{item.quantity}</span>
                                             <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                                                <Plus size={14} />
+                                                +
                                             </button>
                                         </div>
                                     </div>
@@ -113,8 +116,18 @@ const Cart = () => {
                             </div>
                         </div>
 
-                        <button className="btn btn-primary btn-checkout mt-6" onClick={() => navigate('/checkout')}>
-                            Proceed to Checkout <ArrowRight size={18} />
+                        <button
+                            className="btn btn-primary btn-checkout mt-6"
+                            onClick={() => {
+                                if (!user) {
+                                    addToast('Please create an account before checkout.', 'info');
+                                    navigate('/account', { state: { from: '/checkout', prompt: 'Please create an account to continue checkout.' } });
+                                    return;
+                                }
+                                navigate('/checkout');
+                            }}
+                        >
+                            Proceed to Checkout
                         </button>
 
                         <div className="mt-4 text-center">
