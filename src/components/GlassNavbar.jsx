@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Chrome, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
+import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './GlassNavbar.css';
@@ -259,7 +259,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                     className="glass-button glass-button--soft glass-navbar__mobile-action"
                     onClick={() => setAuthOpen(true)}
                   >
-                    <Chrome size={16} />
+                    <Monitor size={16} />
                     Sign in with Google
                   </button>
                 )}
@@ -318,7 +318,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                   onClick={handleGoogleLogin}
                   disabled={authLoading}
                 >
-                  <Chrome size={20} />
+                  <Monitor size={20} />
                   {authLoading ? 'Signing in…' : 'Continue with Google'}
                 </button>
 
