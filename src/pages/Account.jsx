@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import { User, Mail, Phone, ShoppingBag, CheckCircle, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
+import './Auth.css';
 
 const Account = () => {
     const { user, updateProfile, logout, loginWithGoogle } = useAuth();
@@ -41,40 +42,52 @@ const Account = () => {
 
     if (!user) {
         return (
-            <div className="container section animate-fade-in">
-                <div className="account-guest card" style={{ maxWidth: '760px', margin: '0 auto', padding: '2.5rem' }}>
-                    <div className="flex-col items-center text-center gap-4" style={{ maxWidth: '620px', margin: '0 auto' }}>
-                        <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--gradient-accent)', display: 'grid', placeItems: 'center', color: '#fff', boxShadow: 'var(--shadow-glow)' }}>
-                            <Sparkles size={32} />
+            <div className="container section animate-fade-in account-page">
+                <div className="account-auth">
+                    <section className="account-auth__hero card">
+                        <div className="account-auth__badge glass-chip glass-chip--accent">Secure sign-in</div>
+                        <div className="account-auth__icon">
+                            <Sparkles size={30} />
                         </div>
-                        <p className="glass-chip glass-chip--accent" style={{ margin: 0 }}>Secure sign-in</p>
-                        <h1 className="heading-1 mb-2">Continue with your account</h1>
-                        <p className="text-muted" style={{ maxWidth: '540px', fontSize: '1.05rem', lineHeight: 1.7 }}>
-                            {checkoutPrompt}
-                        </p>
-                        <div className="card" style={{ width: '100%', marginTop: '1rem', padding: '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
+                        <h1 className="heading-1 account-auth__title">Continue with your account</h1>
+                        <p className="text-muted account-auth__copy">{checkoutPrompt}</p>
+
+                        <div className="account-auth__benefits card">
                             <h2 className="heading-3 mb-3">What you get</h2>
-                            <ul className="text-muted" style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.8, textAlign: 'left' }}>
+                            <ul className="account-auth__list text-muted">
                                 <li>Continue to checkout without losing your cart.</li>
                                 <li>Track orders and payment history.</li>
                                 <li>Request admin access from the same profile later.</li>
                             </ul>
                         </div>
+
+                        <div className="account-auth__secondary-links">
+                            <button type="button" className="btn btn-outline" onClick={() => navigate('/categories')}>
+                                Browse products
+                            </button>
+                            <button type="button" className="btn btn-outline" onClick={() => navigate('/cart')}>
+                                View cart
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className="account-auth__panel card">
+                        <div className="account-auth__panel-top">
+                            <p className="account-auth__eyebrow">Account login</p>
+                            <h2 className="heading-2">Sign in with Google</h2>
+                            <p className="text-muted account-auth__panel-copy">
+                                Use the Gmail profile you already shop with. Your cart, orders, and admin access request stay tied to the same account.
+                            </p>
+                        </div>
+
                         {authState.text && (
-                            <div style={{
-                                width: '100%',
-                                padding: '0.9rem 1rem',
-                                borderRadius: 'var(--radius-md)',
-                                backgroundColor: authState.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                color: authState.type === 'success' ? 'var(--success-color)' : '#ef4444',
-                                border: `1px solid ${authState.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`
-                            }}>
+                            <div className={`account-auth__message ${authState.type === 'success' ? 'is-success' : 'is-error'}`}>
                                 {authState.text}
                             </div>
                         )}
+
                         <button
-                            className="btn btn-primary"
-                            style={{ minWidth: '220px' }}
+                            className="btn btn-primary account-auth__cta"
                             disabled={authState.loading}
                             onClick={async () => {
                                 setAuthState({ loading: true, text: '', type: '' });
@@ -89,7 +102,11 @@ const Account = () => {
                         >
                             {authState.loading ? 'Signing in...' : 'Continue with Google'} <ArrowRight size={18} />
                         </button>
-                    </div>
+
+                        <p className="account-auth__fineprint text-muted">
+                            By continuing, you keep your shopping session linked to your Gmail account and can return to checkout at any time.
+                        </p>
+                    </section>
                 </div>
             </div>
         );
