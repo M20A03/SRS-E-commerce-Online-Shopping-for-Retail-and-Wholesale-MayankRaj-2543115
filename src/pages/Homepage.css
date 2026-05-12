@@ -1,6 +1,7 @@
 /* ─── Homepage ─── */
 .homepage {
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Gradient mesh background */
@@ -497,8 +498,7 @@
 }
 
 @media (max-width: 768px) {
-  .homepage__promos { grid-template-columns: 1fr; gap: 1rem; }
-  .homepage__promos { grid-template-columns: repeat(2, 1fr); }
+  .homepage__promos { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .quickview-grid { grid-template-columns: 1fr; }
   .quickview-image-wrap { aspect-ratio: 4/3; }
   .hero-slider__stage { aspect-ratio: 4/3; }
