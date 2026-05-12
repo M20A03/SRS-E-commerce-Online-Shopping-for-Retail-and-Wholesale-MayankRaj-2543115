@@ -190,6 +190,9 @@ ul { list-style: none; }
 .gap-8 { gap: 2rem; }
 
 .app-container { min-height: 100vh; display: flex; flex-direction: column; }
+@media (max-width: 640px) {
+  .app-container { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0)); }
+}
 .main-content { flex: 1; }
 
 .logo-img { height: 2.25rem; width: auto; object-fit: contain; transition: opacity var(--transition-fast); }

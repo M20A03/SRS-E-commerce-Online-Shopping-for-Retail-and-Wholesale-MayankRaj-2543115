@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X } from 'lucide-react';
+import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X, Search, Menu } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import './GlassNavbar.css';
@@ -332,6 +332,28 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
           </MotionDiv>
         )}
       </AnimatePresence>
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className="glass-navbar__bottom-nav" aria-label="Mobile Bottom Navigation">
+        <Link to="/" className={`glass-navbar__bottom-nav-item ${location.pathname === '/' ? 'is-active' : ''}`}>
+          <Home size={22} />
+          <span>Home</span>
+        </Link>
+        <Link to="/categories" className={`glass-navbar__bottom-nav-item ${location.pathname === '/categories' ? 'is-active' : ''}`}>
+          <Search size={22} />
+          <span>Shop</span>
+        </Link>
+        <button type="button" className="glass-navbar__bottom-nav-item" onClick={onCartClick}>
+          <div className="glass-navbar__bottom-nav-icon-wrap">
+            <ShoppingCart size={22} />
+            {cartCount > 0 && <span className="glass-navbar__badge glass-navbar__badge--bottom">{cartCount}</span>}
+          </div>
+          <span>Cart</span>
+        </button>
+        <button type="button" className={`glass-navbar__bottom-nav-item ${mobileOpen ? 'is-active' : ''}`} onClick={() => setMobileOpen((value) => !value)}>
+          <Menu size={22} />
+          <span>Menu</span>
+        </button>
+      </nav>
     </>
   );
 };
