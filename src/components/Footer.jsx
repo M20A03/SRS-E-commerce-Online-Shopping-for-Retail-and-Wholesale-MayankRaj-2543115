@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ShieldCheck, Truck, Headphones, CreditCard, Instagram, Facebook, Twitter } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -18,7 +19,11 @@ const Footer = () => {
                         <p className="footer-desc">
                             Your one-stop destination for premium products. Experience quality, elegance, and fast delivery all in one place.
                         </p>
-
+                        <div className="footer-social">
+                            <a href="#" className="social-icon" aria-label="Facebook"><Facebook size={18} /></a>
+                            <a href="#" className="social-icon" aria-label="Instagram"><Instagram size={18} /></a>
+                            <a href="#" className="social-icon" aria-label="Twitter"><Twitter size={18} /></a>
+                        </div>
                     </div>
 
                     {/* Quick Links */}
@@ -69,8 +74,38 @@ const Footer = () => {
 
                 </div>
 
+                <div className="footer-trust-badges">
+                    <div className="trust-badge">
+                        <Truck size={24} />
+                        <div>
+                            <h6>Free Shipping</h6>
+                            <p>On orders over ₹500</p>
+                        </div>
+                    </div>
+                    <div className="trust-badge">
+                        <ShieldCheck size={24} />
+                        <div>
+                            <h6>Secure Payment</h6>
+                            <p>100% safe transactions</p>
+                        </div>
+                    </div>
+                    <div className="trust-badge">
+                        <Headphones size={24} />
+                        <div>
+                            <h6>24/7 Support</h6>
+                            <p>Dedicated assistance</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="footer-bottom">
                     <p className="copyright-text">&copy; {new Date().getFullYear()} Roshan Enterprises. All rights reserved.</p>
+                    <div className="footer-payments">
+                        <span title="UPI"><CreditCard size={20} /> UPI</span>
+                        <span title="Visa">Visa</span>
+                        <span title="Mastercard">Mastercard</span>
+                        <span title="RuPay">RuPay</span>
+                    </div>
                 </div>
             </div>
         </footer>

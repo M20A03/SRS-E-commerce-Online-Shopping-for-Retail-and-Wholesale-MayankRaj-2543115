@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Heart, Star } from 'lucide-react';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
@@ -14,6 +15,18 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isWishlisted, setIsWishlisted] = useState(false);
+
+    const rating = useMemo(() => {
+        // Generate a stable random rating for demo purposes
+        const base = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (3.5 + (base % 15) / 10).toFixed(1);
+    }, [product.id]);
+
+    const reviewCount = useMemo(() => {
+        const base = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (base % 500) + 50;
+    }, [product.id]);
 
     const stock = useMemo(() => {
         if (typeof product.stock === 'number') {
@@ -94,6 +107,14 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
                     <span>{stock > 1 ? `${stock} in stock` : 'Last piece'}</span>
                 </div>
 
+                <button 
+                    className={`product-card__wishlist ${isWishlisted ? 'is-active' : ''}`}
+                    onClick={(e) => { e.preventDefault(); setIsWishlisted(!isWishlisted); }}
+                    aria-label="Add to wishlist"
+                >
+                    <Heart size={18} fill={isWishlisted ? "var(--error-color)" : "transparent"} stroke={isWishlisted ? "var(--error-color)" : "currentColor"} />
+                </button>
+
                 <div className="product-card__image-shell">
                     {!imageLoaded && <div className="skeleton product-card__skeleton" />}
                     {(() => {
@@ -136,6 +157,10 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
             <div className="product-card__content">
                 <div className="product-card__meta">
                     <span className="glass-chip">{product.category}</span>
+                    <div className="product-card__rating">
+                        <Star size={12} fill="var(--accent-3)" stroke="var(--accent-3)" />
+                        <span>{rating} ({reviewCount})</span>
+                    </div>
                     {isLowStock && (
                         <span className="product-card__warning">
                             Only {stock} left

@@ -282,7 +282,7 @@
   padding: 0.75rem 1.1rem;
   border-radius: var(--radius-xl);
   flex: 1;
-  min-width: 200px;
+  min-width: 250px;
 }
 
 .homepage__search-input {
@@ -324,6 +324,30 @@
   color: #fff;
   border-color: transparent;
   box-shadow: var(--shadow-glow);
+}
+
+.homepage__sort {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+}
+
+.homepage__sort-select {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.homepage__sort-select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 /* ── Pagination ── */

@@ -126,6 +126,7 @@ const Homepage = ({ onOpenCart }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('newest');
   const itemsPerPage = 12;
 
   const handleAddToCart = (product) => {
@@ -158,13 +159,19 @@ const Homepage = ({ onOpenCart }) => {
   }, [searchInput]);
 
   const filteredProducts = useMemo(() => {
-    return homepageProducts.filter((p) => {
+    const base = homepageProducts.filter((p) => {
       const matchCat = activeCategory === 'all' || p.category === activeCategory;
       const text = `${p.name} ${p.description} ${p.category}`.toLowerCase();
       const matchSearch = !searchQuery || text.includes(searchQuery);
       return matchCat && matchSearch && p.showOnHomepage !== false;
     });
-  }, [activeCategory, searchQuery, homepageProducts]);
+
+    if (sortBy === 'price-low') return [...base].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-high') return [...base].sort((a, b) => b.price - a.price);
+    if (sortBy === 'newest') return [...base].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    return base;
+  }, [activeCategory, searchQuery, homepageProducts, sortBy]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
@@ -287,6 +294,17 @@ const Homepage = ({ onOpenCart }) => {
                   {cat.name}
                 </button>
               ))}
+            </div>
+            <div className="homepage__sort glass-card--premium">
+              <select 
+                value={sortBy} 
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                className="homepage__sort-select"
+              >
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
             </div>
           </div>
 
