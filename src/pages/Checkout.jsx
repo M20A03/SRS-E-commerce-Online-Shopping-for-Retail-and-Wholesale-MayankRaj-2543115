@@ -18,7 +18,7 @@ const Checkout = () => {
     const { addToast } = useToast();
     const navigate = useNavigate();
 
-    const [paymentMethod, setPaymentMethod] = useState('card');
+    const [paymentMethod, setPaymentMethod] = useState('upi');
     const [isProcessing, setIsProcessing] = useState(false);
     const [orderComplete, setOrderComplete] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
@@ -290,18 +290,6 @@ const Checkout = () => {
                         <h3 className="heading-3 mb-4 border-bottom">Payment Method</h3>
 
                         <div className="payment-options">
-                            <label className={`payment-option ${paymentMethod === 'card' ? 'selected' : ''}`}>
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    value="card"
-                                    checked={paymentMethod === 'card'}
-                                    onChange={() => setPaymentMethod('card')}
-                                />
-                                <CreditCard size={24} />
-                                <span>Credit / Debit Card</span>
-                            </label>
-
                             <label className={`payment-option ${paymentMethod === 'upi' ? 'selected' : ''}`}>
                                 <input
                                     type="radio"
@@ -328,29 +316,6 @@ const Checkout = () => {
                         </div>
 
                         {/* Payment Forms */}
-                        {paymentMethod === 'card' && (
-                            <div className="payment-form animate-fade-in">
-                                <div className="mt-4">
-                                    <label className="label">Card Number</label>
-                                    <input type="text" className="input" placeholder="0000 0000 0000 0000" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label className="label">Expiry Date</label>
-                                        <input type="text" className="input" placeholder="MM/YY" />
-                                    </div>
-                                    <div>
-                                        <label className="label">CVV</label>
-                                        <input type="text" className="input" placeholder="123" />
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <label className="label">Name on Card</label>
-                                    <input type="text" className="input" placeholder="JOHN DOE" />
-                                </div>
-                            </div>
-                        )}
-
                         {paymentMethod === 'upi' && (
                             <div className="payment-form animate-fade-in">
                                 <UPIPayment

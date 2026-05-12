@@ -119,6 +119,7 @@ const Homepage = ({ onOpenCart }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { addToast } = useToast();
   const { products, categories, isLoading: isProductsLoading } = useProducts();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,6 +134,7 @@ const Homepage = ({ onOpenCart }) => {
       return;
     }
     addToCart(product);
+    addToast(`${product.name} added to your cart.`, 'success');
   };
 
   // Visual-only callback for ProductCard fly animation — ProductCard already calls addToCart internally

@@ -176,7 +176,7 @@ const OrderHistory = () => {
                                 </div>
                                 <div className="text-right">
                                     <div className={`order-status ${getOrderStatusClass(order.status)}`}>{order.status}</div>
-                                    <div className="order-total mt-1">₹{order.total.toFixed(2)}</div>
+                                    <div className="order-total mt-1" style={{ color: '#000', fontWeight: '800' }}>₹{order.total.toFixed(2)}</div>
                                 </div>
                             </div>
 

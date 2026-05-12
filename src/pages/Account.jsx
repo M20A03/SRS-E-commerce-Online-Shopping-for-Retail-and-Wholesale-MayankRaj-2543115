@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { User, Mail, Phone, ShoppingBag, CheckCircle, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
 import './Auth.css';
 
 const Account = () => {
     const { user, updateProfile, logout, loginWithGoogle } = useAuth();
+    const { addToast } = useToast();
     const navigate = useNavigate();
     const location = useLocation();
     const checkoutPrompt = location.state?.prompt || 'Please create an account to continue checkout.';
@@ -90,9 +92,11 @@ const Account = () => {
                                 const result = await loginWithGoogle();
                                 if (result.success) {
                                     setAuthState({ loading: false, text: 'Signed in successfully. Redirecting...', type: 'success' });
+                                    addToast('Welcome! Your account is ready.', 'success');
                                     navigate(returnTo, { replace: true });
                                 } else {
                                     setAuthState({ loading: false, text: 'Sign-in could not be completed. Please try again.', type: 'error' });
+                                    addToast('Sign-in failed. Please try again.', 'error');
                                 }
                             }}
                         >
@@ -122,6 +126,7 @@ const Account = () => {
         });
         if (result.success) {
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
+            addToast('Profile updated successfully!', 'success');
             setIsEditing(false);
         } else {
             setMessage({ type: 'error', text: result.error || 'Failed to update profile.' });

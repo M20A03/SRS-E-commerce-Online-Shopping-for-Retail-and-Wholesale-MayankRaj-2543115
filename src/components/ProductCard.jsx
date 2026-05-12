@@ -148,7 +148,7 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
                 <div className="product-card__footer">
                     <div>
-                        <p className="product-card__price">₹{product.price.toFixed(2)}</p>
+                        <p className="product-card__price" style={{ color: '#000', fontWeight: '800' }}>₹{product.price.toFixed(2)}</p>
                         <p className="product-card__subtext">Free delivery eligible</p>
                     </div>
 

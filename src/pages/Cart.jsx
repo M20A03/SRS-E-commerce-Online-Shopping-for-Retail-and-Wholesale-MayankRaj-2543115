@@ -63,7 +63,7 @@ const Cart = () => {
                                     </div>
 
                                     {/* Price */}
-                                    <div className="col-span-2 text-center font-medium">
+                                    <div className="col-span-2 text-center font-medium" style={{ color: '#000' }}>
                                         ₹{item.price.toFixed(2)}
                                     </div>
 
@@ -81,7 +81,7 @@ const Cart = () => {
                                     </div>
 
                                     {/* Item Total */}
-                                    <div className="col-span-2 text-right font-bold">
+                                    <div className="col-span-2 text-right font-bold" style={{ color: '#000' }}>
                                         ₹{(item.price * item.quantity).toFixed(2)}
                                     </div>
 
@@ -110,7 +110,7 @@ const Cart = () => {
                                 <span>Estimated Tax (5%)</span>
                                 <span>₹{tax.toFixed(2)}</span>
                             </div>
-                            <div className="summary-row summary-total">
+                            <div className="summary-row summary-total" style={{ color: '#000' }}>
                                 <span>Total</span>
                                 <span>₹{finalTotal.toFixed(2)}</span>
                             </div>
