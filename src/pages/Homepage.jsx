@@ -127,6 +127,7 @@ const Homepage = ({ onOpenCart }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [priceRange, setPriceRange] = useState('all'); // all, under-100, 100-500, over-500
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const itemsPerPage = 12;
@@ -294,12 +295,24 @@ const Homepage = ({ onOpenCart }) => {
           </div>
 
           <div className="homepage__main-layout">
-            <aside className="homepage__sidebar glass-card--premium">
+            {/* Mobile Filter Toggle */}
+            <div className="homepage__mobile-filter-toggle">
+              <button className="btn btn-outline" onClick={() => setIsMobileFilterOpen(true)}>
+                <Search size={16} /> Filters & Sorting
+              </button>
+            </div>
+
+            <aside className={`homepage__sidebar glass-card--premium ${isMobileFilterOpen ? 'is-open' : ''}`}>
               <div className="homepage__sidebar-header">
                 <h3 className="heading-3">Filters</h3>
-                {(selectedCategories.length > 0 || priceRange !== 'all' || searchInput) && (
-                  <button className="homepage__clear-btn" onClick={clearFilters}>Clear All</button>
-                )}
+                <div className="flex gap-4">
+                  {(selectedCategories.length > 0 || priceRange !== 'all' || searchInput) && (
+                    <button className="homepage__clear-btn" onClick={clearFilters}>Clear</button>
+                  )}
+                  <button className="homepage__close-mobile-btn" onClick={() => setIsMobileFilterOpen(false)}>
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
 
               <div className="homepage__filter-group">
@@ -341,6 +354,14 @@ const Homepage = ({ onOpenCart }) => {
                   ))}
                 </div>
               </div>
+              
+              {/* Mobile apply button */}
+              <button 
+                className="btn btn-gradient homepage__apply-mobile-btn" 
+                onClick={() => setIsMobileFilterOpen(false)}
+              >
+                Apply Filters
+              </button>
             </aside>
 
             <div className="homepage__grid-area">
