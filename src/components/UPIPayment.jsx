@@ -1,10 +1,10 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import './UPIPayment.css';
 
 const UPIPayment = ({ amount, lockedAmount, customerName = 'Roshan Enterprises', onPaymentConfirm }) => {
   const [transactionId, setTransactionId] = useState('');
+  const [randomSuffix] = useState(() => Math.floor(Math.random() * 1000000));
   const payableAmount = Number((lockedAmount ?? amount ?? 0).toFixed(2));
-  const randomSuffix = useRef(Math.floor(Math.random() * 1000000)).current;
   const upiId = 'mayankraj.dhn5-2@okaxis';
 
   const upiLink = useMemo(

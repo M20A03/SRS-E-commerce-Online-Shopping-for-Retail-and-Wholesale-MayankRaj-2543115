@@ -26,6 +26,8 @@ import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
 import OrdersPage from './pages/OrdersPage';
 
+const SUPER_ADMIN_EMAIL = 'mayankrajgupta01@gmail.com';
+
 const initialProductState = {
   name: '',
   price: '',
@@ -141,8 +143,12 @@ const App = () => {
     return snap.data().isAdmin === true;
   };
 
-  const getIsSuperAdmin = async (uid) => {
-    const markerRef = doc(db, 'superAdmins', uid);
+  const getIsSuperAdmin = async (user) => {
+    if (user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
+      return true;
+    }
+
+    const markerRef = doc(db, 'superAdmins', user.uid);
     const snap = await getDoc(markerRef);
     return snap.exists();
   };
@@ -315,7 +321,7 @@ const App = () => {
 
       try {
         const admin = await getIsAdmin(user.uid);
-        const superAdmin = await getIsSuperAdmin(user.uid);
+        const superAdmin = await getIsSuperAdmin(user);
 
         if (superAdmin && !admin) {
           await ensureSuperAdminProfile(user);

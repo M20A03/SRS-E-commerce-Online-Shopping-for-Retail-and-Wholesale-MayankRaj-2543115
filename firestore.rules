@@ -12,9 +12,14 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
+    function isBootstrapSuperAdmin() {
+      return isSignedIn() && request.auth.token.email == 'mayankrajgupta01@gmail.com';
+    }
+
     function isSuperAdmin() {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/superAdmins/$(request.auth.uid));
+        && (exists(/databases/$(database)/documents/superAdmins/$(request.auth.uid))
+          || isBootstrapSuperAdmin());
     }
 
     function isValidUserDoc() {

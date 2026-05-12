@@ -10,10 +10,10 @@ const Cart = () => {
     const { user } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
-    const subtotal = getCartTotal();
+    const subtotal = Number(getCartTotal().toFixed(2));
     const shippingFee = subtotal >= 500 ? 0 : 49;
-    const tax = subtotal * 0.05;
-    const finalTotal = subtotal + shippingFee + tax;
+    const tax = Number((subtotal * 0.05).toFixed(2));
+    const finalTotal = Number((subtotal + shippingFee + tax).toFixed(2));
 
     if (cart.length === 0) {
         return (
