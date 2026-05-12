@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Truck, Headphones, CreditCard, Instagram, Facebook, Twitter } from 'lucide-react';
+import { ShieldCheck, Truck, Headphones, CreditCard, Globe, MessageCircle, Send } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
@@ -20,9 +20,9 @@ const Footer = () => {
                             Your one-stop destination for premium products. Experience quality, elegance, and fast delivery all in one place.
                         </p>
                         <div className="footer-social">
-                            <a href="#" className="social-icon" aria-label="Facebook"><Facebook size={18} /></a>
-                            <a href="#" className="social-icon" aria-label="Instagram"><Instagram size={18} /></a>
-                            <a href="#" className="social-icon" aria-label="Twitter"><Twitter size={18} /></a>
+                            <a href="#" className="social-icon" aria-label="Website"><Globe size={18} /></a>
+                            <a href="#" className="social-icon" aria-label="WhatsApp"><MessageCircle size={18} /></a>
+                            <a href="#" className="social-icon" aria-label="Telegram"><Send size={18} /></a>
                         </div>
                     </div>
 

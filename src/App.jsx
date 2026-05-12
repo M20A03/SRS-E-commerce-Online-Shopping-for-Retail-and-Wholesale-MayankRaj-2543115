@@ -13,6 +13,7 @@ import CartDrawer from './components/CartDrawer';
 import SparkleCanvas from './components/SparkleCanvas';
 import { ToastProvider } from './context/ToastContext';
 import ToastContainer from './components/ToastContainer';
+import { WishlistProvider } from './context/WishlistContext';
 
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Categories = lazy(() => import('./pages/Categories'));
@@ -27,6 +28,7 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
 const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
 
 
 const AppContent = () => {
@@ -90,6 +92,7 @@ const AppContent = () => {
               />
               <Route path="/categories" element={<Categories />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/account" element={<Account />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route
@@ -123,11 +126,13 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CartProvider>
-          <Router>
-            <AppContent />
-          </Router>
-        </CartProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </CartProvider>
+        </WishlistProvider>
       </ToastProvider>
     </AuthProvider>
   );

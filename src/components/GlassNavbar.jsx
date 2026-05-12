@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X, Search, Menu } from 'lucide-react';
+import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X, Search, Menu, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import './GlassNavbar.css';
 
 const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRef }) => {
@@ -55,6 +56,7 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
 
 const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const { getCartCount } = useCart();
+  const { wishlistItems } = useWishlist();
   const { user, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -166,6 +168,15 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
             >
               <ShoppingCart size={18} />
               {cartCount > 0 && <span className="glass-navbar__badge">{cartCount}</span>}
+            </MagneticButton>
+
+            <MagneticButton
+              className="glass-button--soft glass-navbar__icon-button"
+              ariaLabel="View wishlist"
+              onClick={() => navigate('/wishlist')}
+            >
+              <Heart size={18} />
+              {wishlistItems.length > 0 && <span className="glass-navbar__badge">{wishlistItems.length}</span>}
             </MagneticButton>
 
             {user ? (

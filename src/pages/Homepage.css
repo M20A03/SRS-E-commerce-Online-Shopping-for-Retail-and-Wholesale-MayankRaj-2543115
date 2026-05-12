@@ -163,10 +163,7 @@
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1, 'lnum' 1;
   white-space: nowrap;
-  background: var(--gradient-accent);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
 }
 
 /* Slider arrows */
@@ -508,6 +505,7 @@
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1, 'lnum' 1;
   white-space: nowrap;
+  color: var(--text-primary);
 }
 
 .w-full { width: 100%; }

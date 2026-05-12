@@ -196,7 +196,7 @@
 .cart-drawer__summary-total {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #000;
+  color: var(--text-primary);
 }
 
 .cart-drawer__actions {

@@ -1,24 +1,12 @@
 /* ─── Product Card — Next Level ─── */
 .product-card {
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --shine-x: 50%;
-  --shine-y: 50%;
-
   position: relative;
   border-radius: var(--radius-xl);
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   overflow: hidden;
-  transform: perspective(1000px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transform-style: preserve-3d;
   transition: transform var(--transition-fast), box-shadow var(--transition-normal);
-  will-change: transform;
   cursor: pointer;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   user-select: none;
 }
 
@@ -45,36 +33,15 @@
   opacity: 1;
 }
 
-/* Shine overlay */
-.product-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at var(--shine-x) var(--shine-y),
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 65%
-  );
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-  pointer-events: none;
-  z-index: 9;
-}
-
-.product-card:hover::after {
-  opacity: 1;
-}
-
 .product-card:hover {
-  transform: perspective(1000px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(1.02);
-  box-shadow: var(--shadow-xl), var(--shadow-glow);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
   z-index: 20;
 }
 
 /* ── Visual Section ── */
 .product-card__visual {
   position: relative;
-  transform: translateZ(20px); /* Pop out effect */
 }
 
 .product-card__image-shell {
@@ -288,7 +255,6 @@
   flex-direction: column;
   gap: 0.75rem;
   background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.02));
-  transform: translateZ(10px);
 }
 
 .product-card__meta {
@@ -355,11 +321,7 @@
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  background: var(--gradient-accent);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 10px 20px rgba(99,102,241,0.1));
+  color: var(--text-primary);
 }
 
 .product-card__subtext {

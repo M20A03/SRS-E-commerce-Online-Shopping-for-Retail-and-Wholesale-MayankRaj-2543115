@@ -5,6 +5,7 @@ import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Search, ShieldCheck, Truck, Store, X, Zap, ChevronLeft, ChevronRight, Star, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import './Homepage.css';
