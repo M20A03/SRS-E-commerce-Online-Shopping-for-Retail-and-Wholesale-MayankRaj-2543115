@@ -18,11 +18,7 @@ const Footer = () => {
                         <p className="footer-desc">
                             Your one-stop destination for premium products. Experience quality, elegance, and fast delivery all in one place.
                         </p>
-                        <div className="social-links">
-                            <a href="#" className="social-icon" aria-label="Facebook">FB</a>
-                            <a href="#" className="social-icon" aria-label="Twitter">TW</a>
-                            <a href="#" className="social-icon" aria-label="Instagram">IG</a>
-                        </div>
+
                     </div>
 
                     {/* Quick Links */}

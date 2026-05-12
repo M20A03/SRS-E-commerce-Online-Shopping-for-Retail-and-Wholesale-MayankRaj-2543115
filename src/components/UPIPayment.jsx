@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import './UPIPayment.css';
 
 const UPIPayment = ({ amount, lockedAmount, customerName = 'Roshan Enterprises', onPaymentConfirm }) => {
@@ -26,11 +27,26 @@ const UPIPayment = ({ amount, lockedAmount, customerName = 'Roshan Enterprises',
     <div className="upi-payment">
       <div className="upi-payment__content">
         <div className="upi-payment__qr-section">
-          <h4 className="upi-payment__subtitle">UPI payment</h4>
+          <h4 className="upi-payment__subtitle">Scan to Pay</h4>
           <div className="upi-payment__qr-box">
-            <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{upiLink}</code>
+            <QRCodeSVG 
+              value={upiLink}
+              size={180}
+              level="H"
+              includeMargin={true}
+              className="upi-payment__qr-image"
+            />
           </div>
-          <p className="upi-payment__hint">Open this link in a UPI app to pay the exact amount.</p>
+          <div className="upi-payment__mobile-actions">
+            <a href={upiLink} className="upi-payment__app-btn">
+              Pay via UPI App
+            </a>
+          </div>
+          <p className="upi-payment__hint">Scan the QR code or click the button above to pay <strong>₹{payableAmount.toFixed(2)}</strong></p>
+          <div className="upi-payment__security-tip">
+            <AlertTriangle size={14} />
+            <span>If the "Pay" button shows a security alert, please <strong>Scan the QR code</strong> instead.</span>
+          </div>
         </div>
 
         <div className="upi-payment__manual-section">

@@ -61,6 +61,48 @@
   margin: 0;
 }
 
+.upi-payment__mobile-actions {
+  display: none;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.upi-payment__app-btn {
+  display: block;
+  width: 100%;
+  padding: 0.875rem;
+  background: #2563eb;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+@media (max-width: 768px) {
+  .upi-payment__mobile-actions {
+    display: block;
+  }
+}
+
+.upi-payment__security-tip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  color: #d97706;
+  font-size: 0.8rem;
+  margin-top: 1rem;
+}
+
+.upi-payment__security-tip strong {
+  color: #b45309;
+}
+
 /* Divider */
 .upi-payment__divider {
   display: flex;

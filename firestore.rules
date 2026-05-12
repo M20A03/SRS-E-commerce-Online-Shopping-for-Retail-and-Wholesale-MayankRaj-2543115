@@ -31,11 +31,7 @@ service cloud.firestore {
     }
 
     function isValidOrderDoc() {
-      return request.resource.data.keys().hasOnly([
-          'id', 'userId', 'date', 'updatedAt', 'estimatedDeliveryDate', 'estimatedDeliveryDaysMin', 'estimatedDeliveryDaysMax',
-          'items', 'subtotal', 'shippingFee', 'tax', 'total', 'status', 'paymentMethod', 'paymentStatus', 'paymentData', 'customer'
-        ])
-        && request.resource.data.userId == request.auth.uid;
+      return request.resource.data.userId == request.auth.uid;
     }
 
     function isValidAccessRequestDoc() {

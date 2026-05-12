@@ -67,9 +67,8 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const currentDomain = typeof window !== 'undefined' ? window.location.host : '';
 
   const navLinks = useMemo(() => ([
-    { to: '/', label: 'Home' },
-    { to: '/about', label: 'About' },
     { to: '/categories', label: 'Categories' },
+    { to: '/about', label: 'About' },
     { to: '/orders', label: 'Orders' }
   ]), []);
 
@@ -132,10 +131,6 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
       >
         <div className="glass-navbar__inner">
           <Link to="/" className="glass-navbar__brand" aria-label="Go to home page">
-            <span className="glass-navbar__brand-mark">
-              <Sparkles size={18} className="glass-navbar__brand-mark--desktop" />
-              <Home size={18} className="glass-navbar__brand-mark--mobile" />
-            </span>
             <span className="glass-navbar__brand-copy">
               <span className="glass-navbar__brand-title">Roshan Enterprises</span>
               <span className="glass-navbar__brand-subtitle">Cooking oils, teas, detergent</span>

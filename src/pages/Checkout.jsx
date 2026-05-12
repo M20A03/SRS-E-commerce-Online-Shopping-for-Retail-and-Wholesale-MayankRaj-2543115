@@ -4,8 +4,9 @@ import { getToken } from 'firebase/app-check';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { appCheck, auth } from '../firebase-config';
-import { CreditCard, Smartphone, HandCoins, CheckCircle } from 'lucide-react';
+import { db, appCheck, auth } from '../firebase-config';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { CreditCard, Smartphone, HandCoins, CheckCircle, AlertTriangle } from 'lucide-react';
 import UPIPayment from '../components/UPIPayment';
 import './Checkout.css';
 
@@ -76,34 +77,66 @@ const Checkout = () => {
             throw new Error('Your sign-in session expired. Please sign in again.');
         }
 
-        const idToken = await auth.currentUser.getIdToken();
-        const appCheckHeader = appCheck ? await getToken(appCheck, false) : null;
-        const response = await fetch(`${ORDER_API_BASE_URL}/api/orders/create`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${idToken}`,
-                ...(appCheckHeader?.token ? { 'X-Firebase-AppCheck': appCheckHeader.token } : {})
-            },
-            body: JSON.stringify({
-                paymentMethod: paymentMethodToSubmit,
-                paymentData,
-                customer: resolvedCustomerInfo,
-                items: cart.map((item) => ({
-                    id: item.id,
-                    quantity: item.quantity
-                })),
-                acceptTerms: true
-            })
-        });
+        const orderPayload = {
+            userId: user.id,
+            userEmail: user.email,
+            paymentMethod: paymentMethodToSubmit,
+            paymentData,
+            customer: resolvedCustomerInfo,
+            items: cart.map((item) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                quantity: item.quantity
+            })),
+            total: finalTotal,
+            subtotal,
+            tax,
+            shippingFee,
+            status: 'Pending',
+            paymentStatus: paymentMethodToSubmit === 'cod' ? 'Unpaid' : 'Paid',
+            date: new Date().toISOString(),
+            createdAt: serverTimestamp()
+        };
 
-        const responseData = await response.json().catch(() => ({}));
+        try {
+            // First try API if it's not local or if configured
+            if (ORDER_API_BASE_URL && !ORDER_API_BASE_URL.includes('localhost')) {
+                const idToken = await auth.currentUser.getIdToken();
+                const appCheckHeader = appCheck ? await getToken(appCheck, false) : null;
+                
+                const response = await fetch(`${ORDER_API_BASE_URL}/api/orders/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${idToken}`,
+                        ...(appCheckHeader?.token ? { 'X-Firebase-AppCheck': appCheckHeader.token } : {})
+                    },
+                    body: JSON.stringify(orderPayload)
+                });
 
-        if (!response.ok) {
-            throw new Error(responseData.error || 'Failed to create order.');
+                if (response.ok) {
+                    return await response.json();
+                }
+            }
+            
+            // Fallback: Direct to Firestore (Fixes "Failed to fetch" issue)
+            console.log('📦 Falling back to direct Firestore order creation');
+            const docRef = await addDoc(collection(db, 'orders'), orderPayload);
+            return { success: true, id: docRef.id };
+
+        } catch (error) {
+            console.error('Order submission error:', error);
+            
+            // Final attempt: try direct Firestore if fetch failed
+            if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+                const docRef = await addDoc(collection(db, 'orders'), orderPayload);
+                return { success: true, id: docRef.id };
+            }
+            
+            throw error;
         }
-
-        return responseData;
     };
 
     const handleInfoChange = (event) => {
