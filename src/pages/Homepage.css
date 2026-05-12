@@ -264,12 +264,136 @@
   margin-bottom: 2.5rem;
 }
 
+/* ─── Main Layout & Sidebar ─── */
+.homepage__main-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.homepage__sidebar {
+  position: sticky;
+  top: 80px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-radius: var(--radius-xl);
+}
+
+.homepage__sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 1rem;
+}
+
+.homepage__clear-btn {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.homepage__clear-btn:hover {
+  text-decoration: underline;
+}
+
+.homepage__filter-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.homepage__checkbox-list,
+.homepage__radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.homepage__checkbox-label,
+.homepage__radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.homepage__checkbox-label:hover,
+.homepage__radio-label:hover {
+  color: var(--text-primary);
+}
+
+.homepage__checkbox-label input,
+.homepage__radio-label input {
+  display: none;
+}
+
+.homepage__checkbox-custom,
+.homepage__radio-custom {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.homepage__checkbox-custom {
+  border-radius: 4px;
+}
+
+.homepage__radio-custom {
+  border-radius: 50%;
+}
+
+.homepage__checkbox-label input:checked + .homepage__checkbox-custom,
+.homepage__radio-label input:checked + .homepage__radio-custom {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.homepage__checkbox-label input:checked + .homepage__checkbox-custom::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.homepage__radio-label input:checked + .homepage__radio-custom::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+.homepage__grid-area {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .homepage__toolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
 }
 
 .homepage__search {
@@ -293,53 +417,18 @@
 }
 .homepage__search-input::placeholder { color: var(--text-tertiary); }
 
-.homepage__filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.homepage__filter {
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border: 1.5px solid var(--border-color);
-  background: transparent;
-  transition: all var(--transition-spring);
-  cursor: pointer;
-}
-.homepage__filter:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: var(--accent-light);
-  transform: translateY(-2px);
-}
-.homepage__filter.is-active {
-  background: var(--gradient-accent);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: var(--shadow-glow);
-}
-
-.homepage__sort {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-}
-
+/* ─── Sorting Dropdown ─── */
 .homepage__sort-select {
-  border: none;
   background: transparent;
+  border: none;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
   outline: none;
   cursor: pointer;
-  min-width: 140px;
+  appearance: none;
 }
 
 .homepage__sort-select option {
@@ -512,6 +601,10 @@
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1024px) {
+  .homepage__main-layout {
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+  }
   .homepage__hero-grid { grid-template-columns: 1fr; gap: 3rem; }
   .homepage__hero-copy { text-align: center; align-items: center; }
   .homepage__subtitle { max-width: 600px; }

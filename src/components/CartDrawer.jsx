@@ -66,7 +66,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: index * 0.05 + 0.1, duration: 0.3, ease: 'easeOut' }}
                   >
-                    <img src={item.image} alt={item.name} className="cart-drawer__thumb" loading="lazy" />
+                    <img src={Array.isArray(item.images) && item.images.length ? item.images[0] : item.image} alt={item.name} className="cart-drawer__thumb" loading="lazy" />
                     <div className="cart-drawer__item-body">
                       <div className="cart-drawer__item-top">
                         <div>

@@ -17,6 +17,15 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
     const actionButtonRef = useRef(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+
+    // Dynamic mock variants based on category
+    const mockVariants = useMemo(() => {
+        if (product.category === 'oil') return ['500ml', '1L', '5L'];
+        if (product.category === 'tea') return ['250g', '500g', '1kg'];
+        if (product.category === 'detergent') return ['500g', '1kg', '3kg'];
+        return ['1 Unit', 'Pack of 3'];
+    }, [product.category]);
 
     const isWishlisted = isInWishlist(product.id);
 
@@ -42,8 +51,9 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
     const isLowStock = stock <= 3;
 
-    const handleAddToCart = (e) => {
+    const handleAddToCart = (e, variant = null) => {
         e.preventDefault();
+        e.stopPropagation();
         
         if (!user) {
             addToast('Sign in to add items to your cart.', 'info');
@@ -51,10 +61,16 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
             return;
         }
         
-        addToCart(product);
-        addToast(`${product.name} added to your cart.`, 'success');
+        const productToAdd = variant ? {
+            ...product,
+            id: `${product.id}-${variant.replace(/\s+/g, '-').toLowerCase()}`,
+            name: `${product.name} (${variant})`
+        } : product;
+
+        addToCart(productToAdd);
+        addToast(`${productToAdd.name} added to your cart.`, 'success');
         if (typeof onAddToCartFly === 'function') {
-            onAddToCartFly(product, actionButtonRef.current?.getBoundingClientRect());
+            onAddToCartFly(productToAdd, actionButtonRef.current?.getBoundingClientRect());
         }
     };
 
@@ -62,6 +78,8 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
         <article
             ref={cardRef}
             className="product-card glass-card glass-card--interactive"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             <div className="product-card__visual">
                 <div className={`product-card__stock ${isLowStock ? 'product-card__stock--warning' : ''}`}>
@@ -134,18 +152,33 @@ const ProductCard = ({ product, onQuickView, onAddToCartFly }) => {
 
                 <div className="product-card__footer">
                     <div>
-                        <p className="product-card__price" style={{ color: '#000', fontWeight: '800' }}>₹{product.price.toFixed(2)}</p>
-                        <p className="product-card__subtext">Free delivery eligible</p>
+                        <p className="product-card__price">₹{product.price.toFixed(2)}</p>
                     </div>
 
-                    <button
-                        ref={actionButtonRef}
-                        type="button"
-                        className="magnetic-button magnetic-button--primary product-card__add"
-                        onClick={handleAddToCart}
-                    >
-                        Add to cart
-                    </button>
+                    <div className="product-card__quick-add-container" ref={actionButtonRef}>
+                        <button
+                            type="button"
+                            className="magnetic-button magnetic-button--primary product-card__add"
+                            onClick={(e) => handleAddToCart(e)}
+                        >
+                            Add to cart
+                        </button>
+
+                        <div className={`product-card__variant-selector ${isHovered ? 'is-visible' : ''}`}>
+                            <p className="variant-title">Quick Add:</p>
+                            <div className="variant-options">
+                                {mockVariants.map(variant => (
+                                    <button 
+                                        key={variant} 
+                                        className="variant-btn"
+                                        onClick={(e) => handleAddToCart(e, variant)}
+                                    >
+                                        {variant}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </article>

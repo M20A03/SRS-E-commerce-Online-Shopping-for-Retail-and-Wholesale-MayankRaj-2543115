@@ -124,7 +124,8 @@ const Homepage = ({ onOpenCart }) => {
   const { products, categories, isLoading: isProductsLoading } = useProducts();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [priceRange, setPriceRange] = useState('all'); // all, under-100, 100-500, over-500
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
@@ -160,11 +161,17 @@ const Homepage = ({ onOpenCart }) => {
   }, [searchInput]);
 
   const filteredProducts = useMemo(() => {
-    const base = homepageProducts.filter((p) => {
-      const matchCat = activeCategory === 'all' || p.category === activeCategory;
+    let base = homepageProducts.filter((p) => {
+      const matchCat = selectedCategories.length === 0 || selectedCategories.includes(p.category);
       const text = `${p.name} ${p.description} ${p.category}`.toLowerCase();
       const matchSearch = !searchQuery || text.includes(searchQuery);
-      return matchCat && matchSearch && p.showOnHomepage !== false;
+      
+      let matchPrice = true;
+      if (priceRange === 'under-100') matchPrice = p.price < 100;
+      else if (priceRange === '100-500') matchPrice = p.price >= 100 && p.price <= 500;
+      else if (priceRange === 'over-500') matchPrice = p.price > 500;
+
+      return matchCat && matchSearch && matchPrice && p.showOnHomepage !== false;
     });
 
     if (sortBy === 'price-low') return [...base].sort((a, b) => a.price - b.price);
@@ -172,7 +179,7 @@ const Homepage = ({ onOpenCart }) => {
     if (sortBy === 'newest') return [...base].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     return base;
-  }, [activeCategory, searchQuery, homepageProducts, sortBy]);
+  }, [selectedCategories, searchQuery, priceRange, homepageProducts, sortBy]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIdx = (currentPage - 1) * itemsPerPage;
@@ -181,6 +188,22 @@ const Homepage = ({ onOpenCart }) => {
   const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
   const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
   const handlePageJump = (page) => { if (page >= 1 && page <= totalPages) setCurrentPage(page); };
+
+  const handleCategoryToggle = (categoryId) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(c => c !== categoryId)
+        : [...prev, categoryId]
+    );
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setPriceRange('all');
+    setSearchInput('');
+    setCurrentPage(1);
+  };
 
   const statChips = [
     { icon: <Package size={14} />, label: `${products.length}+ Products` },
@@ -270,8 +293,59 @@ const Homepage = ({ onOpenCart }) => {
             <p className="text-muted">Discover our selection of premium household products.</p>
           </div>
 
-          <div className="homepage__toolbar">
-            <div className="homepage__search glass-card--premium">
+          <div className="homepage__main-layout">
+            <aside className="homepage__sidebar glass-card--premium">
+              <div className="homepage__sidebar-header">
+                <h3 className="heading-3">Filters</h3>
+                {(selectedCategories.length > 0 || priceRange !== 'all' || searchInput) && (
+                  <button className="homepage__clear-btn" onClick={clearFilters}>Clear All</button>
+                )}
+              </div>
+
+              <div className="homepage__filter-group">
+                <h4 className="homepage__filter-title">Categories</h4>
+                <div className="homepage__checkbox-list">
+                  {categories.map((cat) => (
+                    <label key={cat.id} className="homepage__checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedCategories.includes(cat.id)}
+                        onChange={() => handleCategoryToggle(cat.id)}
+                      />
+                      <span className="homepage__checkbox-custom"></span>
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="homepage__filter-group">
+                <h4 className="homepage__filter-title">Price Range</h4>
+                <div className="homepage__radio-list">
+                  {[
+                    { id: 'all', label: 'All Prices' },
+                    { id: 'under-100', label: 'Under ₹100' },
+                    { id: '100-500', label: '₹100 - ₹500' },
+                    { id: 'over-500', label: 'Over ₹500' }
+                  ].map(range => (
+                    <label key={range.id} className="homepage__radio-label">
+                      <input 
+                        type="radio" 
+                        name="price-range"
+                        checked={priceRange === range.id}
+                        onChange={() => { setPriceRange(range.id); setCurrentPage(1); }}
+                      />
+                      <span className="homepage__radio-custom"></span>
+                      {range.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <div className="homepage__grid-area">
+              <div className="homepage__toolbar">
+                <div className="homepage__search glass-card--premium">
               <Search size={18} className="text-muted" />
               <input
                 type="search"
@@ -283,43 +357,20 @@ const Homepage = ({ onOpenCart }) => {
                   setCurrentPage(1);
                 }}
               />
-            </div>
-            <div className="homepage__filters">
-              <button className={`homepage__filter ${activeCategory === 'all' ? 'is-active' : ''}`} onClick={() => { setActiveCategory('all'); setCurrentPage(1); }}>All</button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  className={`homepage__filter ${activeCategory === cat.id ? 'is-active' : ''}`}
-                  onClick={() => { setActiveCategory(cat.id); setCurrentPage(1); }}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-            <div className="homepage__sort glass-card--premium">
-              <select 
-                value={sortBy} 
-                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                className="homepage__sort-select"
-              >
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
-          </div>
+                </div>
+              </div>
 
-          {isProductsLoading ? (
-            <div className="grid grid-cols-4 gap-8">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="skeleton" style={{ height: '380px', borderRadius: 'var(--radius-xl)' }} />
-              ))}
-            </div>
-          ) : visibleProducts.length > 0 ? (
-            <>
-              <motion.div
-                className="grid grid-cols-4 gap-8"
-                initial="hidden"
+              {isProductsLoading ? (
+                <div className="grid grid-cols-3 gap-6">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="skeleton" style={{ height: '380px', borderRadius: 'var(--radius-xl)' }} />
+                  ))}
+                </div>
+              ) : visibleProducts.length > 0 ? (
+                <>
+                  <motion.div
+                    className="grid grid-cols-3 gap-6"
+                    initial="hidden"
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
               >
@@ -359,6 +410,8 @@ const Homepage = ({ onOpenCart }) => {
               <p>Try adjusting your search or filters.</p>
             </div>
           )}
+            </div>
+          </div>
         </div>
       </RevealSection>
 
