@@ -248,6 +248,10 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
                   {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
                   Toggle theme
                 </button>
+                <Link to="/account" className="glass-button glass-button--soft glass-navbar__mobile-action" onClick={() => setMobileOpen(false)}>
+                  <User size={16} />
+                  My Account
+                </Link>
                 {user ? (
                   <button type="button" className="glass-button glass-button--soft glass-navbar__mobile-action" onClick={handleLogout}>
                     <LogOut size={16} />
@@ -349,6 +353,10 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
           </div>
           <span>Cart</span>
         </button>
+        <Link to="/account" className={`glass-navbar__bottom-nav-item ${location.pathname === '/account' ? 'is-active' : ''}`}>
+          <User size={22} />
+          <span>Account</span>
+        </Link>
         <button type="button" className={`glass-navbar__bottom-nav-item ${mobileOpen ? 'is-active' : ''}`} onClick={() => setMobileOpen((value) => !value)}>
           <Menu size={22} />
           <span>Menu</span>

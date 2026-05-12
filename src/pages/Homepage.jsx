@@ -250,32 +250,7 @@ const Homepage = ({ onOpenCart }) => {
         </div>
       </section>
 
-      {/* ── Promos ── */}
-      <RevealSection className="section homepage__promos-section" delay={0}>
-        <div className="container">
-          <div className="homepage__promos">
-            {[
-              { icon: <Truck size={28} />, title: 'Fast Delivery', desc: 'Complimentary shipping on qualifying orders.' },
-              { icon: <ShieldCheck size={28} />, title: 'Secure Checkout', desc: '100% protected and safe transactions.' },
-              { icon: <Store size={28} />, title: 'Premium Quality', desc: 'Sourced from the finest local suppliers.' },
-            ].map((promo, i) => (
-              <motion.div
-                key={promo.title}
-                className="homepage__promo glass-card--premium glass-hover-sweep"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -6, transition: { duration: 0.3 } }}
-              >
-                <div className="homepage__promo-icon-wrap">{promo.icon}</div>
-                <h3 className="heading-3">{promo.title}</h3>
-                <p className="text-muted">{promo.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
+
 
       {/* ── Products Section ── */}
       <RevealSection className="section homepage__products">
