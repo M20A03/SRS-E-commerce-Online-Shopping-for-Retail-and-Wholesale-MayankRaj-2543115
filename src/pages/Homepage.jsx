@@ -89,26 +89,15 @@ export default function Home() {
   });
   const progress = useScrollProgress();
   const currentSlide = useMemo(() => slides[active], [active]);
-
-  // Restored product filtering logic
-  const weeklyDiscountProducts = useMemo(() => {
-    const discounted = products.filter((product) => product.originalPrice);
-    return discounted.length > 0 ? discounted.slice(0, 4) : products.slice(0, 4);
-  }, [products]);
-
-  const carouselProducts = useMemo(() => {
-    const forCarousel = products.filter(p => p.showInCarousel);
-    return forCarousel.length > 0 ? forCarousel.slice(0, 10) : products.slice(4, 14);
-  }, [products]);
-
+  const weeklyDiscountProducts = useMemo(() => products.filter((product) => product.originalPrice).slice(0, 4), []);
+  const carouselProducts = useMemo(() => products.slice(0, 10), []);
   const visibleCarouselProducts = useMemo(
     () => carouselProducts.slice(productCarouselStart, productCarouselStart + 4),
     [carouselProducts, productCarouselStart]
   );
-  
   const recentlyViewedProducts = useMemo(
     () => recentlyViewedIds.map((id) => products.find((item) => item.id === id)).filter(Boolean).slice(0, 4),
-    [recentlyViewedIds, products]
+    [recentlyViewedIds]
   );
 
   useEffect(() => {
