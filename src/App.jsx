@@ -10,7 +10,42 @@ import GlassNavbar from './components/GlassNavbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
-import SparkleCanvas from './components/SparkleCanvas';
+import GlobalFX from './components/GlobalFX';
+
+function GlobalScrollObserver() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+
+    const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-glow';
+
+    const shouldRevealImmediately = (el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.top <= window.innerHeight * 0.92;
+    };
+
+    const timeout = setTimeout(() => {
+      document.querySelectorAll(revealSelector).forEach(el => {
+        if (el.classList.contains('visible')) return;
+        if (shouldRevealImmediately(el)) {
+          el.classList.add('visible');
+          return;
+        }
+        observer.observe(el);
+      });
+    }, 150);
+
+    return () => { clearTimeout(timeout); observer.disconnect(); };
+  }, [pathname]);
+  return null;
+}
 import { ToastProvider } from './context/ToastContext';
 import ToastContainer from './components/ToastContainer';
 import { WishlistProvider } from './context/WishlistContext';
@@ -71,7 +106,8 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      <SparkleCanvas />
+      <GlobalFX />
+      <GlobalScrollObserver />
 
       <GlassNavbar
         theme={theme}
