@@ -4,11 +4,11 @@
 
 /* ─── CSS Custom Properties ─── */
 :root {
-  --primary:       #FFF8F0;
-  --secondary:     #F2E8DC;
-  --accent:        #C9956A;
-  --accent-light:  #E8C4A0;
-  --accent-dark:   #A07040;
+  --primary:       #E8D8C3;
+  --secondary:     #DBCAB6;
+  --accent:        #D96D2C;
+  --accent-light:  #F2994A;
+  --accent-dark:   #A14F1B;
   --text-dark:     #2C1F14;
   --text-mid:      #6B5040;
   --text-light:    #9E8575;

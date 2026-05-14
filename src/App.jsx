@@ -64,6 +64,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
 const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 
 
 const AppContent = () => {
@@ -146,6 +147,7 @@ const AppContent = () => {
               <Route path="/terms" element={<Terms />} />
               <Route path="/shipping-policy" element={<ShippingPolicy />} />
               <Route path="/return-policy" element={<ReturnPolicy />} />
+              <Route path="/track-order" element={<TrackOrder />} />
             </Routes>
           </div>
         </Suspense>

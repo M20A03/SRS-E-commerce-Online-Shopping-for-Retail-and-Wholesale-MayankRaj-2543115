@@ -71,7 +71,8 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const navLinks = useMemo(() => ([
     { to: '/categories', label: 'Categories' },
     { to: '/about', label: 'About' },
-    { to: '/orders', label: 'Orders' }
+    { to: '/orders', label: 'Orders' },
+    { to: '/track-order', label: 'Track Order' }
   ]), []);
 
   const MotionHeader = motion.header;
