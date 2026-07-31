@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+// IMPROVEMENT: Memoized WishlistContext with useCallback/useMemo and toast feedback
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from './ToastContext';
 
 const WishlistContext = createContext();
@@ -6,63 +7,66 @@ const WishlistContext = createContext();
 export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
-    const [wishlistItems, setWishlistItems] = useState([]);
-    const { addToast } = useToast();
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      const savedWishlist = localStorage.getItem('roshan_wishlist');
+      return savedWishlist ? JSON.parse(savedWishlist) : [];
+    } catch {
+      return [];
+    }
+  });
 
-    // Load from local storage on mount
-    useEffect(() => {
-        try {
-            const savedWishlist = localStorage.getItem('roshan_wishlist');
-            if (savedWishlist) {
-                setWishlistItems(JSON.parse(savedWishlist));
-            }
-        } catch (error) {
-            console.error('Failed to load wishlist:', error);
-        }
-    }, []);
+  const { addToast } = useToast();
 
-    // Save to local storage whenever it changes
-    useEffect(() => {
-        try {
-            localStorage.setItem('roshan_wishlist', JSON.stringify(wishlistItems));
-        } catch (error) {
-            console.error('Failed to save wishlist:', error);
-        }
-    }, [wishlistItems]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('roshan_wishlist', JSON.stringify(wishlistItems));
+    } catch (error) {
+      console.error('Failed to save wishlist:', error);
+    }
+  }, [wishlistItems]);
 
-    const addToWishlist = (product) => {
-        setWishlistItems((prev) => {
-            if (prev.some(item => item.id === product.id)) return prev;
-            addToast(`${product.name} added to favourites!`, 'success');
-            return [...prev, product];
-        });
-    };
+  const addToWishlist = useCallback((product) => {
+    setWishlistItems((prev) => {
+      if (prev.some((item) => item.id === product.id)) return prev;
+      if (addToast) addToast(`${product.name || 'Product'} added to wishlist!`, 'success');
+      return [...prev, product];
+    });
+  }, [addToast]);
 
-    const removeFromWishlist = (productId) => {
-        setWishlistItems((prev) => {
-            const newWishlist = prev.filter(item => item.id !== productId);
-            if (newWishlist.length < prev.length) {
-                addToast('Item removed from favourites.', 'info');
-            }
-            return newWishlist;
-        });
-    };
+  const removeFromWishlist = useCallback((productId) => {
+    setWishlistItems((prev) => {
+      const newWishlist = prev.filter((item) => item.id !== productId);
+      if (newWishlist.length < prev.length && addToast) {
+        addToast('Item removed from wishlist.', 'info');
+      }
+      return newWishlist;
+    });
+  }, [addToast]);
 
-    const toggleWishlist = (product) => {
-        if (wishlistItems.some(item => item.id === product.id)) {
-            removeFromWishlist(product.id);
-        } else {
-            addToWishlist(product);
-        }
-    };
+  const toggleWishlist = useCallback((product) => {
+    if (wishlistItems.some((item) => item.id === product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  }, [wishlistItems, removeFromWishlist, addToWishlist]);
 
-    const isInWishlist = (productId) => {
-        return wishlistItems.some(item => item.id === productId);
-    };
+  const isInWishlist = useCallback((productId) => {
+    return wishlistItems.some((item) => item.id === productId);
+  }, [wishlistItems]);
 
-    return (
-        <WishlistContext.Provider value={{ wishlistItems, addToWishlist, removeFromWishlist, toggleWishlist, isInWishlist }}>
-            {children}
-        </WishlistContext.Provider>
-    );
+  const value = useMemo(() => ({
+    wishlistItems,
+    addToWishlist,
+    removeFromWishlist,
+    toggleWishlist,
+    isInWishlist
+  }), [wishlistItems, addToWishlist, removeFromWishlist, toggleWishlist, isInWishlist]);
+
+  return (
+    <WishlistContext.Provider value={value}>
+      {children}
+    </WishlistContext.Provider>
+  );
 };

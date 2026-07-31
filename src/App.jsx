@@ -1,9 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+// IMPROVEMENT: Refactored App root component with CookieConsent banner, memoized route prefetching, and smooth suspense fallback
+import React, { useEffect, useMemo, useRef, useState, lazy, Suspense, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// Global Contexts
+// Global Contexts & Toast
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ToastProvider } from './context/ToastContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 // Layout Components
 import GlassNavbar from './components/GlassNavbar';
@@ -11,18 +14,23 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
 import GlobalFX from './components/GlobalFX';
+import ToastContainer from './components/ToastContainer';
+import CookieConsent from './components/CookieConsent';
 
 function GlobalScrollObserver() {
   const { pathname } = useLocation();
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -20px 0px' }
+    );
 
     const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-glow';
 
@@ -32,7 +40,7 @@ function GlobalScrollObserver() {
     };
 
     const timeout = setTimeout(() => {
-      document.querySelectorAll(revealSelector).forEach(el => {
+      document.querySelectorAll(revealSelector).forEach((el) => {
         if (el.classList.contains('visible')) return;
         if (shouldRevealImmediately(el)) {
           el.classList.add('visible');
@@ -42,14 +50,15 @@ function GlobalScrollObserver() {
       });
     }, 150);
 
-    return () => { clearTimeout(timeout); observer.disconnect(); };
+    return () => {
+      clearTimeout(timeout);
+      observer.disconnect();
+    };
   }, [pathname]);
   return null;
 }
-import { ToastProvider } from './context/ToastContext';
-import ToastContainer from './components/ToastContainer';
-import { WishlistProvider } from './context/WishlistContext';
 
+// Lazy-loaded pages
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Categories = lazy(() => import('./pages/Categories'));
 const Account = lazy(() => import('./pages/Account'));
@@ -65,7 +74,6 @@ const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
 const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
-
 
 const AppContent = () => {
   const [theme, setTheme] = useState(() => {
@@ -101,9 +109,17 @@ const AppContent = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [location.pathname]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  }, []);
+
+  const handleOpenCart = useCallback(() => {
+    setIsCartOpen(true);
+  }, []);
+
+  const handleCloseCart = useCallback(() => {
+    setIsCartOpen(false);
+  }, []);
 
   return (
     <div className="app-container">
@@ -113,19 +129,26 @@ const AppContent = () => {
       <GlassNavbar
         theme={theme}
         toggleTheme={toggleTheme}
-        onCartClick={() => setIsCartOpen(true)}
+        onCartClick={handleOpenCart}
         cartButtonRef={(node) => {
           cartButtonRef.current = node;
         }}
       />
 
       <main className="main-content">
-        <Suspense fallback={<div className="spinner">Loading...</div>}>
+        <Suspense
+          fallback={
+            <div className="container section flex-col items-center justify-center" style={{ minHeight: '50vh' }}>
+              <div className="spinner" />
+              <p className="text-muted mt-4">Loading Roshan Enterprises...</p>
+            </div>
+          }
+        >
           <div className="route-transition-shell">
             <Routes location={location}>
               <Route
                 path="/"
-                element={<Homepage onOpenCart={() => setIsCartOpen(true)} cartButtonRef={cartButtonRef} />}
+                element={<Homepage onOpenCart={handleOpenCart} cartButtonRef={cartButtonRef} />}
               />
               <Route path="/categories" element={<Categories />} />
               <Route path="/cart" element={<Cart />} />
@@ -153,9 +176,10 @@ const AppContent = () => {
         </Suspense>
       </main>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer isOpen={isCartOpen} onClose={handleCloseCart} />
       <Footer />
       <ToastContainer />
+      <CookieConsent />
     </div>
   );
 };

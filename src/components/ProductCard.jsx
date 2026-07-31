@@ -1,30 +1,46 @@
-import { useState, useRef } from 'react';
+// IMPROVEMENT: Memoized ProductCard presentational component with lazy image loading, smooth mouse parallax, and toast integrations
+import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useReveal } from '../hooks/useReveal';
 
-export default function ProductCard({ product, delay = 0 }) {
+function ProductCard({ product, delay = 0 }) {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
   const revealRef = useReveal();
   const cardRef = useRef(null);
-  
+
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     setMousePos({ x, y });
-  };
+  }, []);
 
   const isWishlisted = isInWishlist(product.id);
+  const ratingVal = Number(product.rating) || 5;
+  const reviewsCount = Number(product.reviews) || 0;
+  const stars = '★'.repeat(Math.floor(ratingVal)) + (ratingVal % 1 ? '☆' : '');
 
-  const stars = '★'.repeat(Math.floor(product.rating)) + (product.rating % 1 ? '☆' : '');
+  const handleCardClick = useCallback(() => {
+    navigate(`/categories?cat=${product.category || 'all'}`);
+  }, [navigate, product.category]);
+
+  const handleAddToCart = useCallback((e) => {
+    e.stopPropagation();
+    addToCart(product);
+  }, [addToCart, product]);
+
+  const handleToggleWishlist = useCallback((e) => {
+    e.stopPropagation();
+    toggleWishlist(product);
+  }, [toggleWishlist, product]);
 
   return (
     <div
@@ -33,7 +49,7 @@ export default function ProductCard({ product, delay = 0 }) {
         cardRef.current = el;
       }}
       className="product-card reveal"
-      style={{ 
+      style={{
         transitionDelay: `${delay}s`,
         '--mouse-x': `${mousePos.x}%`,
         '--mouse-y': `${mousePos.y}%`
@@ -41,12 +57,12 @@ export default function ProductCard({ product, delay = 0 }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); setMousePos({ x: 50, y: 50 }); }}
       onMouseMove={handleMouseMove}
-      onClick={() => navigate(`/products/${product.id}`)}
+      onClick={handleCardClick}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          navigate(`/products/${product.id}`);
+          handleCardClick();
         }
       }}
       role="link"
@@ -56,12 +72,17 @@ export default function ProductCard({ product, delay = 0 }) {
       <div className={`product-glow ${isHovered ? 'active' : ''}`} />
       <div className="product-img-wrap">
         {product.badge && (
-          <span className={`product-label ${product.badgeType}`}>{product.badge}</span>
+          <span className={`product-label ${product.badgeType || 'sale'}`}>{product.badge}</span>
         )}
-        <img src={product.image} alt={product.name} loading="lazy" />
+        <img
+          src={product.image || '/images/products/bundle.jpg'}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+        />
         <button
           className={`product-wishlist ${isWishlisted ? 'wishlisted' : ''}`}
-          onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
+          onClick={handleToggleWishlist}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <svg viewBox="0 0 24 24" fill={isWishlisted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
@@ -70,24 +91,26 @@ export default function ProductCard({ product, delay = 0 }) {
         </button>
         <button
           className="product-quick-add"
-          onClick={e => { e.stopPropagation(); addToCart(product); }}
+          onClick={handleAddToCart}
         >
           + Add to Cart
         </button>
       </div>
       <div className="product-info">
-        <p className="product-brand">{product.brand}</p>
+        <p className="product-brand">{product.brand || 'Roshan Essentials'}</p>
         <h4 className="product-name">{product.name}</h4>
         <div className="product-rating">
           <span className="stars">{stars}</span>
-          <span>({product.reviews.toLocaleString()} reviews)</span>
+          <span>({reviewsCount.toLocaleString()} reviews)</span>
         </div>
         <div className="product-price">
-          <span className="price-current">₹{product.price.toFixed(2)}</span>
-          {product.originalPrice && (
+          <span className="price-current">₹{Number(product.price).toFixed(2)}</span>
+          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
             <>
-              <span className="price-original">₹{product.originalPrice.toFixed(2)}</span>
-              <span className="price-badge">SAVE {Math.round((1 - product.price/product.originalPrice)*100)}%</span>
+              <span className="price-original">₹{Number(product.originalPrice).toFixed(2)}</span>
+              <span className="price-badge">
+                SAVE {Math.round((1 - Number(product.price) / Number(product.originalPrice)) * 100)}%
+              </span>
             </>
           )}
         </div>
@@ -95,3 +118,5 @@ export default function ProductCard({ product, delay = 0 }) {
     </div>
   );
 }
+
+export default React.memo(ProductCard);

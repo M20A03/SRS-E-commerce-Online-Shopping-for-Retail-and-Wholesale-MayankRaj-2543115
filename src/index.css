@@ -2,31 +2,57 @@
    LumiGlow — Global CSS Design System
    ============================================================ */
 
-/* ─── CSS Custom Properties ─── */
+/* IMPROVEMENT: Sophisticated Warm Earthy Luxury Design Tokens & CSS Variables */
 :root {
-  --primary:       #FFF8F0;
-  --secondary:     #F2E8DC;
-  --accent:        #C9956A;
-  --accent-light:  #E8C4A0;
-  --accent-dark:   #A07040;
-  --text-dark:     #2C1F14;
-  --text-mid:      #6B5040;
-  --text-light:    #9E8575;
-  --sage:          #8FAF8F;
-  --sage-light:    #C8DDCA;
-  --white:         #FFFFFF;
-  --border:        rgba(201, 149, 106, 0.25);
-  --shadow-soft:   0 4px 24px rgba(160, 112, 64, 0.10);
-  --shadow-mid:    0 8px 40px rgba(160, 112, 64, 0.18);
-  --shadow-lift:   0 20px 60px rgba(160, 112, 64, 0.22);
+  /* Default Warm Earthy Dark Theme */
+  --bg-primary:    #1e130b;
+  --bg-secondary:  #2d1b0e;
+  --bg-card:       rgba(45, 27, 14, 0.85);
+  --bg-glass:      rgba(45, 27, 14, 0.65);
+  --primary:       #1e130b;
+  --secondary:     #2d1b0e;
+  --accent:        #c8965d;
+  --accent-light:  #e8d5c4;
+  --accent-dark:   #8c5a32;
+  --accent-hover:  #dfa86c;
+  --text-dark:     #f8f2ea;
+  --text-mid:      #e8d5c4;
+  --text-light:    #b89d87;
+  --sage:          #8faf8f;
+  --sage-light:    #c8ddca;
+  --white:         #ffffff;
+  --border:        rgba(212, 163, 115, 0.25);
+  --shadow-soft:   0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-mid:    0 8px 40px rgba(0, 0, 0, 0.45);
+  --shadow-lift:   0 20px 60px rgba(0, 0, 0, 0.55);
   --radius-sm:     8px;
   --radius-md:     16px;
   --radius-lg:     24px;
   --radius-pill:   100px;
   --transition:    0.4s cubic-bezier(0.23, 1, 0.32, 1);
   --transition-fast: 0.2s ease;
-  --font-serif:    'Cormorant Garamond', Georgia, serif;
-  --font-sans:     'Jost', 'Helvetica Neue', sans-serif;
+  --font-serif:    'Playfair Display', Georgia, serif;
+  --font-sans:     'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html[data-theme='light'] {
+  --bg-primary:    #faf6f0;
+  --bg-secondary:  #f3ece2;
+  --bg-card:       rgba(255, 255, 255, 0.9);
+  --bg-glass:      rgba(255, 255, 255, 0.75);
+  --primary:       #faf6f0;
+  --secondary:     #f3ece2;
+  --accent:        #b28b6e;
+  --accent-light:  #5c3d2a;
+  --accent-dark:   #2d1b0e;
+  --accent-hover:  #9c7558;
+  --text-dark:     #2d1b0e;
+  --text-mid:      #5c3d2a;
+  --text-light:    #8c6d58;
+  --border:        rgba(92, 61, 42, 0.18);
+  --shadow-soft:   0 4px 24px rgba(92, 61, 42, 0.08);
+  --shadow-mid:    0 8px 40px rgba(92, 61, 42, 0.12);
+  --shadow-lift:   0 20px 60px rgba(92, 61, 42, 0.18);
 }
 
 /* ─── Reset ─── */

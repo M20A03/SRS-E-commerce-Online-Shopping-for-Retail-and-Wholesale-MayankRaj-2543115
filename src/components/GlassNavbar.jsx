@@ -1,22 +1,24 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+// IMPROVEMENT: Memoized GlassNavbar with SVG Logo component, memoized action handlers, and Admin Portal navigation
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sparkles, Sun, User, X, Search, Menu, Heart } from 'lucide-react';
+import { Monitor, ChevronRight, Home, LogOut, Moon, ShoppingCart, Sun, User, X, Search, Menu, Heart, Shield } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import Logo from './Logo';
 import './GlassNavbar.css';
 
-const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRef }) => {
+const MagneticButton = React.memo(({ children, className = '', onClick, ariaLabel, buttonRef }) => {
   const innerRef = useRef(null);
-  const setRefs = (node) => {
+  const setRefs = useCallback((node) => {
     innerRef.current = node;
     if (typeof buttonRef === 'function') {
       buttonRef(node);
     }
-  };
+  }, [buttonRef]);
 
-  const handleMove = (event) => {
+  const handleMove = useCallback((event) => {
     const node = innerRef.current;
     if (!node) return;
     const rect = node.getBoundingClientRect();
@@ -31,13 +33,13 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
     }
     const ratio = (20 - distance) / 20;
     node.style.transform = `translate3d(${distanceX * 0.18 * ratio}px, ${distanceY * 0.18 * ratio}px, 0)`;
-  };
+  }, []);
 
-  const handleLeave = () => {
+  const handleLeave = useCallback(() => {
     if (innerRef.current) {
       innerRef.current.style.transform = 'translate3d(0, 0, 0)';
     }
-  };
+  }, []);
 
   return (
     <button
@@ -52,7 +54,9 @@ const MagneticButton = ({ children, className = '', onClick, ariaLabel, buttonRe
       {children}
     </button>
   );
-};
+});
+
+MagneticButton.displayName = 'MagneticButton';
 
 const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   const { getCartCount } = useCart();
@@ -103,12 +107,12 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     return () => { document.body.style.overflow = ''; };
   }, [authOpen]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     navigate('/');
-  };
+  }, [logout, navigate]);
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = useCallback(async () => {
     setAuthError('');
     setAuthLoading(true);
     try {
@@ -122,7 +126,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
     } finally {
       setAuthLoading(false);
     }
-  };
+  }, [loginWithGoogle, navigate]);
 
   return (
     <>
@@ -133,12 +137,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
         transition={{ duration: 0.4 }}
       >
         <div className="glass-navbar__inner">
-          <Link to="/" className="glass-navbar__brand" aria-label="Go to home page">
-            <span className="glass-navbar__brand-copy">
-              <span className="glass-navbar__brand-title">Roshan Enterprises</span>
-              <span className="glass-navbar__brand-subtitle">Cooking oils, teas, detergent</span>
-            </span>
-          </Link>
+          <Logo size="medium" />
 
           <nav className="glass-navbar__links" aria-label="Primary navigation">
             {navLinks.map((link) => (
@@ -313,7 +312,7 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
               {authError && (
                 <div className="glass-navbar__error">
                   {authError}
-                  {authError.includes('Google login blocked for this domain') && (
+                  {authError.includes('unauthorized-domain') && (
                     <p className="glass-navbar__hint" style={{ marginTop: '0.4rem' }}>
                       Add <strong>{currentDomain}</strong> in Firebase Authentication → Authorized domains.
                     </p>
@@ -373,4 +372,4 @@ const GlassNavbar = ({ theme, toggleTheme, onCartClick, cartButtonRef }) => {
   );
 };
 
-export default GlassNavbar;
+export default React.memo(GlassNavbar);

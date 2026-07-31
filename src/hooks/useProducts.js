@@ -1,56 +1,67 @@
+// IMPROVEMENT: Optimised useProducts hook with local storage caching, query limit, and memoized category derivation
 import { useEffect, useMemo, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, query, limit } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
-const useProducts = () => {
+const CACHE_KEY = 'roshan_products_cache';
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+const useProducts = (maxLimit = 100) => {
   const [products, setProducts] = useState(() => {
-    const cached = localStorage.getItem('products_cache');
-    if (cached) {
-      try {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
         const { data, timestamp } = JSON.parse(cached);
-        // If cache is less than 30 minutes old, use it as initial state
-        if (Date.now() - timestamp < 30 * 60 * 1000) {
+        if (Date.now() - timestamp < CACHE_TTL) {
           return data;
         }
-      } catch (e) {
-        console.error('Failed to parse products cache', e);
       }
+    } catch (e) {
+      console.error('Failed to parse products cache', e);
     }
     return [];
   });
   const [isLoading, setIsLoading] = useState(products.length === 0);
 
   useEffect(() => {
+    const productsQuery = query(collection(db, 'products'), limit(maxLimit));
     const unsubscribe = onSnapshot(
-      collection(db, 'products'),
+      productsQuery,
       (snapshot) => {
         const firestoreProducts = snapshot.docs.map((docItem) => ({
           id: docItem.id,
           ...docItem.data()
         }));
         setProducts(firestoreProducts);
-        localStorage.setItem('products_cache', JSON.stringify({
-          data: firestoreProducts,
-          timestamp: Date.now()
-        }));
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: firestoreProducts,
+            timestamp: Date.now()
+          }));
+        } catch (err) {
+          console.error('Failed to update products cache:', err);
+        }
         setIsLoading(false);
       },
       (error) => {
         console.error('Error loading products:', error);
-        setProducts([]);
         setIsLoading(false);
       }
     );
 
-
     return () => unsubscribe();
-  }, []);
+  }, [maxLimit]);
 
-  const activeProducts = useMemo(() => products.filter((product) => product.isActive !== false), [products]);
+  const activeProducts = useMemo(() => {
+    return products.filter((product) => product.isActive !== false);
+  }, [products]);
 
   const derivedCategories = useMemo(() => {
-    const available = new Set(activeProducts.map((product) => product.category));
-    return Array.from(available).map((categoryId) => ({ id: categoryId, name: categoryId }));
+    const available = new Set(activeProducts.map((product) => product.category).filter(Boolean));
+    return Array.from(available).map((categoryId) => ({
+      id: categoryId,
+      name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1)
+    }));
   }, [activeProducts]);
 
   return {

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// IMPROVEMENT: Refactored TrackOrder page with Roshan Enterprises branding, ToastContext error alerts, and interactive order timeline
+import React, { useState, useCallback } from 'react';
+import { useToast } from '../context/ToastContext';
 import './Phase2.css';
 
 const timelineSteps = ['Order Placed', 'Packed', 'In Transit', 'Out for Delivery', 'Delivered'];
@@ -7,76 +9,79 @@ function buildStatus(code) {
   const value = code.trim().toUpperCase();
 
   if (value.length < 6) {
-    return { error: 'Tracking code not found. Please verify your order or tracking ID and try again.' };
+    return { error: 'Tracking code not found. Please verify your order or tracking ID (minimum 6 characters) and try again.' };
   }
 
   const bucket = value.length % 4;
   if (bucket === 0) {
     return {
       status: 'Out for Delivery',
-      location: 'Lumi Glow local courier hub',
+      location: 'Roshan Enterprises Dhanbad Hub',
       eta: 'Arriving today by 8:00 PM',
       currentStep: 3,
-      details: 'Your package is with the delivery partner and should reach you very soon.',
+      details: 'Your package is out with our local delivery agent and should reach your address very soon.',
     };
   }
 
   if (bucket === 1) {
     return {
       status: 'In Transit',
-      location: 'Regional sorting center',
-      eta: 'Arriving in 2 to 3 days',
+      location: 'Regional Sorting Facility',
+      eta: 'Arriving in 1 to 2 days',
       currentStep: 2,
-      details: 'Your order is moving through the shipping network and is on schedule.',
+      details: 'Your order is currently in transit through our delivery network and on schedule.',
     };
   }
 
   if (bucket === 2) {
     return {
       status: 'Packed',
-      location: 'Lumi Glow fulfillment center',
-      eta: 'Carrier pickup in 12 to 24 hours',
+      location: 'Roshan Fulfillment Center',
+      eta: 'Carrier handoff in 12 hours',
       currentStep: 1,
-      details: 'Your order is packed and queued for handoff to the courier.',
+      details: 'Your order is securely packed and waiting for courier dispatch.',
     };
   }
 
   return {
     status: 'Delivered',
-    location: 'Delivered to your address',
+    location: 'Delivered to Destination',
     eta: 'Delivered successfully',
     currentStep: 4,
-    details: 'Your package has been delivered. If anything is missing, contact support within 48 hours.',
+    details: 'Your order has been delivered! If you need assistance with your items, contact our support team.',
   };
 }
 
-export default function TrackOrder() {
+const TrackOrder = () => {
   const [trackingCode, setTrackingCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const { addToast } = useToast();
 
-  const handleTrack = (event) => {
+  const handleTrack = useCallback((event) => {
     event.preventDefault();
     setLoading(true);
     setResult(null);
 
     window.setTimeout(() => {
-      setResult(buildStatus(trackingCode));
+      const res = buildStatus(trackingCode);
+      setResult(res);
       setLoading(false);
-    }, 900);
-  };
-
-  const openConcierge = () => {
-    window.dispatchEvent(new CustomEvent('open-dh-concierge'));
-  };
+      if (res.error && addToast) {
+        addToast(res.error, 'error');
+      } else if (addToast) {
+        addToast(`Tracking status updated: ${res.status}`, 'success');
+      }
+    }, 700);
+  }, [trackingCode, addToast]);
 
   return (
     <div className="p2-track-page">
       <section className="p2-track-hero">
         <div className="container p2-track-hero-inner reveal">
-          <p className="section-label">Shipping and Delivery</p>
-          <h1>Track Your Lumi Glow Order</h1>
-          <p>Enter your order number or courier tracking code and get a live delivery snapshot in seconds.</p>
+          <p className="section-label">Shipping & Logistics</p>
+          <h1>Track Your Order</h1>
+          <p>Enter your order ID or courier tracking code to receive live status updates for your shipment.</p>
         </div>
       </section>
 
@@ -88,16 +93,16 @@ export default function TrackOrder() {
               <input
                 id="tracking-code"
                 type="text"
-                placeholder="Example: LG12345678"
+                placeholder="Example: RE12345678"
                 value={trackingCode}
                 onChange={(event) => setTrackingCode(event.target.value)}
                 required
               />
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Tracking...' : 'Track Order'}
+                {loading ? 'Locating...' : 'Track Order'}
               </button>
             </div>
-            <p className="p2-track-help">Need help finding your code? Check your order confirmation email.</p>
+            <p className="p2-track-help">Need help finding your code? Check your SMS or order confirmation email.</p>
           </form>
 
           {result?.error && (
@@ -115,7 +120,7 @@ export default function TrackOrder() {
                   <p>{result.location}</p>
                 </div>
                 <div className="p2-track-eta">
-                  <span>Expected Update</span>
+                  <span>Expected Handoff</span>
                   <strong>{result.eta}</strong>
                 </div>
               </div>
@@ -141,19 +146,20 @@ export default function TrackOrder() {
         <div className="p2-track-support-grid reveal">
           <article>
             <h4>Standard Delivery</h4>
-            <p>Domestic orders usually arrive in 3 to 5 business days. Express service is available at checkout.</p>
+            <p>Orders in Dhanbad and Jharkhand arrive in 1 to 3 business days. Express delivery is available at checkout.</p>
           </article>
           <article>
-            <h4>Processing Window</h4>
-            <p>Orders placed before 1:00 PM are typically processed the same day on working days.</p>
+            <h4>Dispatch Timeline</h4>
+            <p>Orders placed before 2:00 PM are packed and dispatched on the same business day.</p>
           </article>
           <article>
-            <h4>Need Extra Help?</h4>
-            <p>If your order looks delayed, launch our concierge and we will guide your next step quickly.</p>
-            <button type="button" className="btn btn-outline" onClick={openConcierge}>Open Concierge</button>
+            <h4>Need Support?</h4>
+            <p>If your package is delayed, call us directly at <strong>+91 7004634675</strong> or email <strong>surendrakumardhn@gmail.com</strong>.</p>
           </article>
         </div>
       </section>
     </div>
   );
-}
+};
+
+export default React.memo(TrackOrder);
