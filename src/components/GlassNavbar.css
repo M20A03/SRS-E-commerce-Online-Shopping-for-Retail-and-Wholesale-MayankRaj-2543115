@@ -264,6 +264,53 @@
   display: none;
 }
 
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 70px;
+  }
+
+  .glass-navbar__bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.25rem;
+    box-shadow: 0 -4px 20px rgba(82, 59, 43, 0.08);
+  }
+
+  .glass-navbar__bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    color: var(--text-light);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .glass-navbar__bottom-nav-item.is-active,
+  .glass-navbar__bottom-nav-item:hover {
+    color: var(--accent);
+  }
+}
+
 /* Modal */
 .glass-navbar__modal-backdrop {
   position: fixed;

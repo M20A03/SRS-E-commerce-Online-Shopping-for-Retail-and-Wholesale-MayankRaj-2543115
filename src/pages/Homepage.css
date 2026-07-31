@@ -1,11 +1,8 @@
 .dh-home-v2 {
   --scroll-depth: 0;
   position: relative;
-  overflow: clip;
-  background:
-    radial-gradient(900px 360px at 15% 10%, rgba(255, 219, 172, 0.45), transparent 70%),
-    radial-gradient(760px 420px at 82% 16%, rgba(141, 85, 36, 0.35), transparent 74%),
-    linear-gradient(180deg, #fff8f0 0%, #f1e0ce 48%, #e3cebb 100%);
+  overflow-x: hidden;
+  background: var(--bg-primary);
 }
 
 .dh-home-v2::before,

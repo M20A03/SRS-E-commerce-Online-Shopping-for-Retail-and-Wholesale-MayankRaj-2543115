@@ -82,6 +82,14 @@ function GlobalScrollObserver() {
   return null;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 // Lazy-loaded pages
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Categories = lazy(() => import('./pages/Categories'));
@@ -149,6 +157,7 @@ const AppContent = () => {
     <div className="app-container">
       <GlobalFX />
       <GlobalScrollObserver />
+      <ScrollToTop />
 
       <GlassNavbar
         theme={theme}
@@ -175,6 +184,8 @@ const AppContent = () => {
                 element={<Homepage onOpenCart={handleOpenCart} cartButtonRef={cartButtonRef} />}
               />
               <Route path="/categories" element={<Categories />} />
+              <Route path="/products" element={<Categories />} />
+              <Route path="/products/:id" element={<Categories />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/account" element={<Account />} />
@@ -195,6 +206,7 @@ const AppContent = () => {
               <Route path="/shipping-policy" element={<ShippingPolicy />} />
               <Route path="/return-policy" element={<ReturnPolicy />} />
               <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="*" element={<Categories />} />
             </Routes>
           </div>
         </Suspense>
