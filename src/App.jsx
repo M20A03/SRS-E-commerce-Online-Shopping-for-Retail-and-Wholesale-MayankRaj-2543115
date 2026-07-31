@@ -19,7 +19,22 @@ import CookieConsent from './components/CookieConsent';
 
 function GlobalScrollObserver() {
   const { pathname } = useLocation();
+
   useEffect(() => {
+    const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-glow';
+
+    const revealElementsInViewport = () => {
+      const elements = document.querySelectorAll(revealSelector);
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 1.15 || !window.IntersectionObserver) {
+          el.classList.add('visible');
+        }
+      });
+    };
+
+    revealElementsInViewport();
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -29,32 +44,41 @@ function GlobalScrollObserver() {
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -20px 0px' }
+      { threshold: 0.05, rootMargin: '50px 0px 50px 0px' }
     );
 
-    const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-glow';
-
-    const shouldRevealImmediately = (el) => {
-      const rect = el.getBoundingClientRect();
-      return rect.top <= window.innerHeight * 0.92;
+    const observeAll = () => {
+      document.querySelectorAll(revealSelector).forEach((el) => {
+        if (!el.classList.contains('visible')) {
+          observer.observe(el);
+        }
+      });
     };
 
-    const timeout = setTimeout(() => {
+    observeAll();
+
+    // Re-trigger reveal check when lazy-loaded components mount
+    const mutationObserver = new MutationObserver(() => {
+      revealElementsInViewport();
+      observeAll();
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    // Safety fallback: ensure all elements become visible after 500ms
+    const safetyTimer = setTimeout(() => {
       document.querySelectorAll(revealSelector).forEach((el) => {
-        if (el.classList.contains('visible')) return;
-        if (shouldRevealImmediately(el)) {
-          el.classList.add('visible');
-          return;
-        }
-        observer.observe(el);
+        el.classList.add('visible');
       });
-    }, 150);
+    }, 500);
 
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(safetyTimer);
       observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, [pathname]);
+
   return null;
 }
 
