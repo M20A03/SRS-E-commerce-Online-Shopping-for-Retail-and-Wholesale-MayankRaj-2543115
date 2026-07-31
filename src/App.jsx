@@ -78,7 +78,7 @@ const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 const AppContent = () => {
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'light' ? 'light' : 'dark';
+    return savedTheme === 'dark' ? 'dark' : 'light';
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartButtonRef = useRef(null);

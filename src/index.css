@@ -2,29 +2,33 @@
    LumiGlow — Global CSS Design System
    ============================================================ */
 
-/* IMPROVEMENT: Sophisticated Warm Earthy Luxury Design Tokens & CSS Variables */
+/* IMPROVEMENT: Light Professional Design Tokens & CSS Variables (Default: Light Luxury) */
 :root {
-  /* Default Warm Earthy Dark Theme */
-  --bg-primary:    #1e130b;
-  --bg-secondary:  #2d1b0e;
-  --bg-card:       rgba(45, 27, 14, 0.85);
-  --bg-glass:      rgba(45, 27, 14, 0.65);
-  --primary:       #1e130b;
-  --secondary:     #2d1b0e;
-  --accent:        #c8965d;
-  --accent-light:  #e8d5c4;
-  --accent-dark:   #8c5a32;
-  --accent-hover:  #dfa86c;
-  --text-dark:     #f8f2ea;
-  --text-mid:      #e8d5c4;
-  --text-light:    #b89d87;
-  --sage:          #8faf8f;
-  --sage-light:    #c8ddca;
+  /* Default Clean & Professional Light Luxury Palette */
+  --bg-primary:    #faf7f2;
+  --bg-secondary:  #f4eee6;
+  --bg-card:       #ffffff;
+  --bg-glass:      rgba(255, 255, 255, 0.88);
+  --primary:       #faf7f2;
+  --secondary:     #f4eee6;
+
+  --accent:        #b28b6e;
+  --accent-light:  #d8c3b2;
+  --accent-dark:   #7a5437;
+  --accent-hover:  #9c7558;
+
+  --text-dark:     #1e130b; /* Crisp dark brown text for max readability */
+  --text-mid:      #523b2b;
+  --text-light:    #7c6250;
+
+  --sage:          #5a825a;
+  --sage-light:    #d2e3d2;
   --white:         #ffffff;
-  --border:        rgba(212, 163, 115, 0.25);
-  --shadow-soft:   0 4px 24px rgba(0, 0, 0, 0.35);
-  --shadow-mid:    0 8px 40px rgba(0, 0, 0, 0.45);
-  --shadow-lift:   0 20px 60px rgba(0, 0, 0, 0.55);
+  --border:        rgba(178, 139, 110, 0.22);
+  --border-color:  rgba(178, 139, 110, 0.22);
+  --shadow-soft:   0 4px 20px rgba(82, 59, 43, 0.06);
+  --shadow-mid:    0 8px 32px rgba(82, 59, 43, 0.10);
+  --shadow-lift:   0 16px 48px rgba(82, 59, 43, 0.14);
   --radius-sm:     8px;
   --radius-md:     16px;
   --radius-lg:     24px;
@@ -33,26 +37,46 @@
   --transition-fast: 0.2s ease;
   --font-serif:    'Playfair Display', Georgia, serif;
   --font-sans:     'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Legacy variable mappings for backward compatibility */
+  --text-primary:  #1e130b;
+  --text-secondary: #523b2b;
+  --text-tertiary: #7c6250;
+  --accent-color:  #b28b6e;
+  --gradient-accent: linear-gradient(135deg, #b28b6e 0%, #7a5437 100%);
+  --glass-bg:      rgba(255, 255, 255, 0.92);
+  --glass-border:  rgba(178, 139, 110, 0.2);
+  --glass-blur:    blur(16px);
 }
 
-html[data-theme='light'] {
-  --bg-primary:    #faf6f0;
-  --bg-secondary:  #f3ece2;
-  --bg-card:       rgba(255, 255, 255, 0.9);
-  --bg-glass:      rgba(255, 255, 255, 0.75);
-  --primary:       #faf6f0;
-  --secondary:     #f3ece2;
-  --accent:        #b28b6e;
-  --accent-light:  #5c3d2a;
-  --accent-dark:   #2d1b0e;
-  --accent-hover:  #9c7558;
-  --text-dark:     #2d1b0e;
-  --text-mid:      #5c3d2a;
-  --text-light:    #8c6d58;
-  --border:        rgba(92, 61, 42, 0.18);
-  --shadow-soft:   0 4px 24px rgba(92, 61, 42, 0.08);
-  --shadow-mid:    0 8px 40px rgba(92, 61, 42, 0.12);
-  --shadow-lift:   0 20px 60px rgba(92, 61, 42, 0.18);
+html[data-theme='dark'] {
+  --bg-primary:    #1a1008;
+  --bg-secondary:  #26180d;
+  --bg-card:       rgba(42, 26, 14, 0.9);
+  --bg-glass:      rgba(42, 26, 14, 0.75);
+  --primary:       #1a1008;
+  --secondary:     #26180d;
+
+  --accent:        #c8965d;
+  --accent-light:  #e8d5c4;
+  --accent-dark:   #8c5a32;
+  --accent-hover:  #dfa86c;
+
+  --text-dark:     #f8f2ea;
+  --text-mid:      #e8d5c4;
+  --text-light:    #b89d87;
+
+  --text-primary:  #f8f2ea;
+  --text-secondary: #e8d5c4;
+  --text-tertiary: #b89d87;
+
+  --border:        rgba(212, 163, 115, 0.25);
+  --border-color:  rgba(212, 163, 115, 0.25);
+  --shadow-soft:   0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-mid:    0 8px 40px rgba(0, 0, 0, 0.45);
+  --shadow-lift:   0 20px 60px rgba(0, 0, 0, 0.55);
+  --glass-bg:      rgba(42, 26, 14, 0.85);
+  --glass-border:  rgba(212, 163, 115, 0.2);
 }
 
 /* ─── Reset ─── */
