@@ -1,8 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /admin-app/
-Disallow: /checkout
-Disallow: /orders
 Disallow: /account
+Disallow: /checkout
 
 Sitemap: https://e-commerce-roshan-enterprises-dhn.web.app/sitemap.xml

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import useDebounce from '../hooks/useDebounce';
+import SEO from '../components/SEO';
 import './Categories.css';
 
 const Categories = () => {
@@ -55,8 +56,33 @@ const Categories = () => {
     }
   }, [navigate]);
 
+  const activeCategoryLabel = activeCategory === 'all' ? 'All Collections' : categories.find((c) => c.id === activeCategory)?.name || activeCategory;
+
   return (
     <div className="categories-container animate-fade-in">
+      <SEO
+        title={`${activeCategoryLabel} | Roshan Enterprises Dhanbad`}
+        description={`Shop ${activeCategoryLabel} online at Roshan Enterprises. Find high quality mustard oil, sunflower oil, Assam tea, and household supplies in Dhanbad.`}
+        canonicalPath={`/categories${activeCategory !== 'all' ? `?cat=${activeCategory}` : ''}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: 'https://e-commerce-roshan-enterprises-dhn.web.app/'
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: 'Categories',
+              item: 'https://e-commerce-roshan-enterprises-dhn.web.app/categories'
+            }
+          ]
+        }}
+      />
       {/* Page Header */}
       <div className="categories-header">
         <h1 className="heading-1">Our Collections</h1>

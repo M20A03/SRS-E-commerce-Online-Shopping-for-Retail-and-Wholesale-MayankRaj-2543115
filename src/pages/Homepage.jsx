@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
+import SEO from '../components/SEO';
 import './Homepage.css';
 
 const slides = [
@@ -200,6 +201,34 @@ export default function Home() {
 
   return (
     <div className="dh-home-v2" style={{ '--scroll-depth': progress }}>
+      <SEO
+        title="Roshan Enterprises | Online Shopping Dhanbad | Retail & Wholesale"
+        description="Buy cooking oils, Assam tea, laundry detergent, and daily household essentials online in Dhanbad at wholesale rates with fast doorstep delivery."
+        canonicalPath="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'GroceryStore',
+          name: 'Roshan Enterprises',
+          image: 'https://e-commerce-roshan-enterprises-dhn.web.app/logo.png',
+          url: 'https://e-commerce-roshan-enterprises-dhn.web.app/',
+          telephone: '+917004634675',
+          priceRange: '₹₹',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'RCVG+6G, Satyam Nagar',
+            addressLocality: 'Dhanbad',
+            addressRegion: 'Jharkhand',
+            postalCode: '826010',
+            addressCountry: 'IN'
+          },
+          openingHoursSpecification: {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            opens: '09:00',
+            closes: '20:00'
+          }
+        }}
+      />
       <div className="dh-scroll-meter" aria-hidden="true">
         <span style={{ width: `${progress}%` }} />
       </div>
