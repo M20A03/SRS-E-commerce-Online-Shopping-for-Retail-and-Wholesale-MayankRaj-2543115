@@ -1,12 +1,17 @@
-// IMPROVEMENT: Memoized ToastContext with useCallback, useMemo, and dismissal control
+// IMPROVEMENT: Resilient, memoized ToastContext with safe fallback for un-nested components
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
-const ToastContext = createContext();
+const ToastContext = createContext(null);
 
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
+    // Return no-op safe fallback to prevent unhandled app crashes
+    return {
+      addToast: () => {},
+      removeToast: () => {},
+      toasts: []
+    };
   }
   return context;
 };

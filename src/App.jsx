@@ -186,8 +186,8 @@ const AppContent = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
+    <ToastProvider>
+      <AuthProvider>
         <WishlistProvider>
           <CartProvider>
             <Router>
@@ -195,8 +195,8 @@ function App() {
             </Router>
           </CartProvider>
         </WishlistProvider>
-      </ToastProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 
