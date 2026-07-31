@@ -1,41 +1,10 @@
-// IMPROVEMENT: Memoized Categories page using custom useDebounce hook and react-window virtualization when list > 50 items
+// IMPROVEMENT: High-performance, pixel-perfect responsive Categories page for Phone, Tablet, and Desktop
 import React, { useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FixedSizeList as List } from 'react-window';
 import ProductCard from '../components/ProductCard';
 import useProducts from '../hooks/useProducts';
 import useDebounce from '../hooks/useDebounce';
 import './Categories.css';
-
-const VirtualizedProductGrid = ({ products }) => {
-  // 3 items per row grid virtualized for long product lists (> 50 items)
-  const itemsPerRow = 3;
-  const rowCount = Math.ceil(products.length / itemsPerRow);
-
-  const Row = ({ index, style }) => {
-    const startIdx = index * itemsPerRow;
-    const rowProducts = products.slice(startIdx, startIdx + itemsPerRow);
-
-    return (
-      <div style={{ ...style, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-        {rowProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    );
-  };
-
-  return (
-    <List
-      height={800}
-      itemCount={rowCount}
-      itemSize={420}
-      width="100%"
-    >
-      {Row}
-    </List>
-  );
-};
 
 const Categories = () => {
   const location = useLocation();
@@ -87,17 +56,17 @@ const Categories = () => {
   }, [navigate]);
 
   return (
-    <div className="container section animate-fade-in">
+    <div className="categories-container animate-fade-in">
       {/* Page Header */}
       <div className="categories-header">
         <h1 className="heading-1">Our Collections</h1>
-        <p className="text-muted" style={{ marginTop: '1rem', maxWidth: '600px' }}>
+        <p className="categories-subtitle">
           Explore our premium range of cooking oils, teas, and household essentials carefully selected for you.
         </p>
       </div>
 
       <div className="categories-layout">
-        {/* Sidebar Filters */}
+        {/* Sidebar Filters (Sticky on desktop, horizontal scrollable pills on mobile) */}
         <aside className="categories-sidebar">
           <h3 className="sidebar-title">Categories</h3>
           <ul className="category-list">
@@ -124,10 +93,10 @@ const Categories = () => {
           </ul>
         </aside>
 
-        {/* Product Grid */}
+        {/* Main Products Container */}
         <main className="categories-main">
           <div className="categories-results-bar">
-            <span>Showing <strong>{visibleProducts.length}</strong> products</span>
+            <span className="results-count">Showing <strong>{visibleProducts.length}</strong> products</span>
             <div className="categories-controls">
               <input
                 type="search"
@@ -153,10 +122,8 @@ const Categories = () => {
             <div className="empty-state">
               <p className="text-muted">Loading products...</p>
             </div>
-          ) : visibleProducts.length > 50 ? (
-            <VirtualizedProductGrid products={visibleProducts} />
           ) : visibleProducts.length > 0 ? (
-            <div className="grid grid-cols-3 gap-4 products-grid">
+            <div className="categories-products-grid">
               {visibleProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
