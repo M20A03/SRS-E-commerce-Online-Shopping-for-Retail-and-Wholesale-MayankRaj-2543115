@@ -4,31 +4,43 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Roshan Enterprises - Premium retail & wholesale e-commerce in Dhanbad, Jharkhand. Buy cooking oil, tea, detergent, and household essentials online with fast delivery." />
-    <meta name="keywords" content="Roshan Enterprises, online grocery Dhanbad, buy cooking oil online, premium tea Dhanbad, wholesale household essentials Jharkhand, household products delivery, grocery store Satyam Nagar Dhanbad" />
+    <meta name="description" content="Roshan Enterprises - Premium retail & wholesale e-commerce in Dhanbad, Jharkhand. High quality cooking oils, authentic tea, and household essentials." />
+    <meta name="keywords" content="Roshan Enterprises, online grocery Dhanbad, buy cooking oil online, premium tea Dhanbad, wholesale household essentials Jharkhand" />
     <meta name="author" content="Roshan Enterprises" />
-    <!-- IMPROVEMENT: Google Fonts for elegant typography stack (Inter + Playfair Display) -->
+
+    <!-- ZERO FOUC INLINE THEME SCRIPT -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved || (prefersDark ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Google Fonts: Inter & Plus Jakarta Sans with font-display: swap -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="canonical" href="https://e-commerce-roshan-enterprises-dhn.web.app/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://e-commerce-roshan-enterprises-dhn.web.app/" />
-    <meta property="og:title" content="Roshan Enterprises | Premium Retail & Wholesale E-commerce" />
+    <meta property="og:title" content="Roshan Enterprises | Modern Retail & Wholesale E-commerce" />
     <meta property="og:description" content="Shop cooking oils, tea, and household essentials with reliable quality and sophisticated doorstep delivery in Dhanbad." />
     <meta property="og:image" content="https://e-commerce-roshan-enterprises-dhn.web.app/hero_banner.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://e-commerce-roshan-enterprises-dhn.web.app/" />
-    <meta property="twitter:title" content="Roshan Enterprises | Premium Retail & Wholesale E-commerce" />
+    <meta property="twitter:title" content="Roshan Enterprises | Modern Retail & Wholesale E-commerce" />
     <meta property="twitter:description" content="Shop cooking oils, tea, and household essentials with reliable quality and sophisticated doorstep delivery in Dhanbad." />
     <meta property="twitter:image" content="https://e-commerce-roshan-enterprises-dhn.web.app/hero_banner.png" />
 
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="preload" href="/roshan-logo.png" as="image" />
+    <meta name="theme-color" content="#2563eb" />
     <meta name="color-scheme" content="light dark" />
     <title>Roshan Enterprises | Online Shopping Dhanbad | Retail & Wholesale</title>
 
@@ -62,24 +74,6 @@
         ],
         "opens": "09:00",
         "closes": "20:00"
-      },
-      "sameAs": [
-        "https://e-commerce-roshan-enterprises-dhn.web.app/"
-      ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "url": "https://e-commerce-roshan-enterprises-dhn.web.app/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://e-commerce-roshan-enterprises-dhn.web.app/?s={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
       }
     }
     </script>

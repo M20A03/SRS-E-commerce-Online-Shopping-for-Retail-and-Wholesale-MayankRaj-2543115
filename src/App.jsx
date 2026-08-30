@@ -1,27 +1,28 @@
-// IMPROVEMENT: Refactored App root component with CookieConsent banner, memoized route prefetching, and smooth suspense fallback
-import React, { useEffect, useMemo, useRef, useState, lazy, Suspense, useCallback } from 'react';
+import React, { lazy, Suspense, useCallback, useRef, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// Global Contexts & Toast
+// Global Contexts
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { ThemeProvider, useTheme } from './components/ThemeProvider';
 
-// Layout Components
+// Layout & Core Infrastructure Components
+import ErrorBoundary from './components/ErrorBoundary';
 import GlassNavbar from './components/GlassNavbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
-import GlobalFX from './components/GlobalFX';
 import ToastContainer from './components/ToastContainer';
 import CookieConsent from './components/CookieConsent';
 
+// Global Scroll Observer for smooth reveals
 function GlobalScrollObserver() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-glow';
+    const revealSelector = '.reveal, .reveal-left, .reveal-right, .reveal-scale';
 
     const revealElementsInViewport = () => {
       const elements = document.querySelectorAll(revealSelector);
@@ -57,7 +58,6 @@ function GlobalScrollObserver() {
 
     observeAll();
 
-    // Re-trigger reveal check when lazy-loaded components mount
     const mutationObserver = new MutationObserver(() => {
       revealElementsInViewport();
       observeAll();
@@ -65,12 +65,11 @@ function GlobalScrollObserver() {
 
     mutationObserver.observe(document.body, { childList: true, subtree: true });
 
-    // Safety fallback: ensure all elements become visible after 500ms
     const safetyTimer = setTimeout(() => {
       document.querySelectorAll(revealSelector).forEach((el) => {
         el.classList.add('visible');
       });
-    }, 500);
+    }, 400);
 
     return () => {
       clearTimeout(safetyTimer);
@@ -85,12 +84,12 @@ function GlobalScrollObserver() {
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [pathname]);
   return null;
 }
 
-// Lazy-loaded pages
+// Lazy-loaded pages with Suspense chunks
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Categories = lazy(() => import('./pages/Categories'));
 const Account = lazy(() => import('./pages/Account'));
@@ -108,42 +107,10 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 
 const AppContent = () => {
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark' ? 'dark' : 'light';
-  });
+  const { theme, toggleTheme } = useTheme();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartButtonRef = useRef(null);
   const location = useLocation();
-  const prefetchedRoutes = useMemo(() => ['/categories', '/cart', '/checkout', '/account'], []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const supportsBackdrop = typeof CSS !== 'undefined' && CSS.supports('backdrop-filter', 'blur(1px)');
-    document.documentElement.classList.toggle('no-backdrop-filter', !supportsBackdrop);
-  }, []);
-
-  useEffect(() => {
-    prefetchedRoutes.forEach((route) => {
-      const link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.as = 'document';
-      link.href = route;
-      document.head.appendChild(link);
-    });
-  }, [prefetchedRoutes]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [location.pathname]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  }, []);
 
   const handleOpenCart = useCallback(() => {
     setIsCartOpen(true);
@@ -155,7 +122,7 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      <GlobalFX />
+      <div className="ambient-glow" aria-hidden="true" />
       <GlobalScrollObserver />
       <ScrollToTop />
 
@@ -171,44 +138,42 @@ const AppContent = () => {
       <main className="main-content">
         <Suspense
           fallback={
-            <div className="container section flex-col items-center justify-center" style={{ minHeight: '50vh' }}>
+            <div className="container section flex flex-col items-center justify-center" style={{ minHeight: '50vh' }}>
               <div className="spinner" />
-              <p className="text-muted mt-4">Loading Roshan Enterprises...</p>
+              <p className="text-muted mt-4 font-medium">Loading Roshan Enterprises...</p>
             </div>
           }
         >
-          <div className="route-transition-shell">
-            <Routes location={location}>
-              <Route
-                path="/"
-                element={<Homepage onOpenCart={handleOpenCart} cartButtonRef={cartButtonRef} />}
-              />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/products" element={<Categories />} />
-              <Route path="/products/:id" element={<Categories />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route
-                path="/orders"
-                element={
-                  <ProtectedRoute>
-                    <OrderHistory />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/shipping-policy" element={<ShippingPolicy />} />
-              <Route path="/return-policy" element={<ReturnPolicy />} />
-              <Route path="/track-order" element={<TrackOrder />} />
-              <Route path="*" element={<Categories />} />
-            </Routes>
-          </div>
+          <Routes location={location}>
+            <Route
+              path="/"
+              element={<Homepage onOpenCart={handleOpenCart} cartButtonRef={cartButtonRef} />}
+            />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/products" element={<Categories />} />
+            <Route path="/products/:id" element={<Categories />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <OrderHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/return-policy" element={<ReturnPolicy />} />
+            <Route path="/track-order" element={<TrackOrder />} />
+            <Route path="*" element={<Categories />} />
+          </Routes>
         </Suspense>
       </main>
 
@@ -222,17 +187,21 @@ const AppContent = () => {
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <WishlistProvider>
-          <CartProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </CartProvider>
-        </WishlistProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <ThemeProvider>
+                <Router>
+                  <AppContent />
+                </Router>
+              </ThemeProvider>
+            </CartProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 

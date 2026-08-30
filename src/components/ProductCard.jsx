@@ -1,11 +1,11 @@
-// IMPROVEMENT: Memoized ProductCard presentational component with lazy image loading, smooth mouse parallax, and toast integrations
 import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useReveal } from '../hooks/useReveal';
+import './ProductCard.css';
 
-function ProductCard({ product, delay = 0 }) {
+function ProductCard({ product, delay = 0, onQuickView }) {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ function ProductCard({ product, delay = 0 }) {
   const cardRef = useRef(null);
 
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
-  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseMove = useCallback((e) => {
     if (!cardRef.current) return;
@@ -29,8 +28,12 @@ function ProductCard({ product, delay = 0 }) {
   const stars = '★'.repeat(Math.floor(ratingVal)) + (ratingVal % 1 ? '☆' : '');
 
   const handleCardClick = useCallback(() => {
-    navigate(`/categories?cat=${product.category || 'all'}`);
-  }, [navigate, product.category]);
+    if (typeof onQuickView === 'function') {
+      onQuickView(product);
+    } else {
+      navigate(`/categories?cat=${product.category || 'all'}`);
+    }
+  }, [navigate, onQuickView, product]);
 
   const handleAddToCart = useCallback((e) => {
     e.stopPropagation();
@@ -54,8 +57,7 @@ function ProductCard({ product, delay = 0 }) {
         '--mouse-x': `${mousePos.x}%`,
         '--mouse-y': `${mousePos.y}%`
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); setMousePos({ x: 50, y: 50 }); }}
+      onMouseLeave={() => setMousePos({ x: 50, y: 50 })}
       onMouseMove={handleMouseMove}
       onClick={handleCardClick}
       onKeyDown={(event) => {
@@ -69,7 +71,6 @@ function ProductCard({ product, delay = 0 }) {
       tabIndex={0}
       aria-label={`View details for ${product.name}`}
     >
-      <div className={`product-glow ${isHovered ? 'active' : ''}`} />
       <div className="product-img-wrap">
         {product.badge && (
           <span className={`product-label ${product.badgeType || 'sale'}`}>{product.badge}</span>
@@ -81,6 +82,7 @@ function ProductCard({ product, delay = 0 }) {
           decoding="async"
         />
         <button
+          type="button"
           className={`product-wishlist ${isWishlisted ? 'wishlisted' : ''}`}
           onClick={handleToggleWishlist}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -90,6 +92,7 @@ function ProductCard({ product, delay = 0 }) {
           </svg>
         </button>
         <button
+          type="button"
           className="product-quick-add"
           onClick={handleAddToCart}
         >

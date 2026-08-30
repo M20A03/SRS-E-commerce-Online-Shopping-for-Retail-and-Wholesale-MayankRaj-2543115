@@ -1,0 +1,170 @@
+/* ============================================================
+   ROSHAN ENTERPRISES — MODERN DESIGN TOKENS (WCAG 2.1 AA)
+   ============================================================ */
+
+:root {
+  /* Brand Primary & Accents (Vibrant Modern Indigo & Emerald) */
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
+  --brand-primary-light: #eff6ff;
+  --brand-primary-glow: rgba(37, 99, 235, 0.25);
+
+  --brand-accent: #059669;
+  --brand-accent-hover: #047857;
+  --brand-accent-light: #ecfdf5;
+
+  --brand-secondary: #f59e0b;
+  --brand-danger: #ef4444;
+  --brand-danger-bg: #fef2f2;
+  --brand-success: #10b981;
+  --brand-success-bg: #ecfdf5;
+
+  /* Surfaces & Backgrounds (Light Mode - Crisp & Clean) */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f1f5f9;
+  --bg-surface-hover: #e2e8f0;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-heavy: rgba(255, 255, 255, 0.95);
+
+  /* Typography Colors */
+  --text-primary: #0f172a;     /* Slate 900 */
+  --text-secondary: #475569;   /* Slate 600 */
+  --text-tertiary: #94a3b8;    /* Slate 400 */
+  --text-inverse: #ffffff;
+  --text-link: #2563eb;
+  --text-link-hover: #1d4ed8;
+
+  /* Borders & Dividers */
+  --border-subtle: #f1f5f9;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-focus: #2563eb;
+  --border-glass: rgba(226, 232, 240, 0.8);
+
+  /* Elevation & Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 2px 4px -1px rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-inner: inset 0 2px 4px 0 rgba(15, 23, 42, 0.05);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.2);
+
+  /* Typography Scale */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+
+  /* 8px/4px Spacing Grid */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions & Motion */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Glass Blur */
+  --blur-sm: blur(8px);
+  --blur-md: blur(16px);
+  --blur-lg: blur(24px);
+
+  /* Backward Compatibility Variables for Legacy Components */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-surface-subtle);
+  --bg-card: var(--bg-surface);
+  --primary: var(--bg-app);
+  --secondary: var(--bg-surface-subtle);
+  --accent: var(--brand-primary);
+  --accent-light: var(--brand-primary-light);
+  --accent-dark: var(--brand-primary-hover);
+  --accent-hover: var(--brand-primary-hover);
+  --text-dark: var(--text-primary);
+  --text-mid: var(--text-secondary);
+  --text-light: var(--text-tertiary);
+  --border: var(--border-default);
+  --border-color: var(--border-default);
+  --shadow-soft: var(--shadow-sm);
+  --shadow-lift: var(--shadow-xl);
+  --glass-bg: var(--bg-glass);
+  --glass-border: var(--border-glass);
+  --glass-blur: var(--blur-md);
+}
+
+/* Dark Mode Tokens (Obsidian Slate System) */
+html[data-theme='dark'] {
+  --bg-app: #090d16;
+  --bg-surface: #0f172a;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-subtle: #141e33;
+  --bg-surface-hover: #1e293b;
+  --bg-glass: rgba(15, 23, 42, 0.85);
+  --bg-glass-heavy: rgba(15, 23, 42, 0.95);
+
+  --text-primary: #f8fafc;     /* Slate 50 */
+  --text-secondary: #cbd5e1;   /* Slate 300 */
+  --text-tertiary: #64748b;    /* Slate 500 */
+  --text-inverse: #0f172a;
+  --text-link: #60a5fa;
+  --text-link-hover: #93c5fd;
+
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-focus: #3b82f6;
+  --border-glass: rgba(255, 255, 255, 0.12);
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 24px rgba(59, 130, 246, 0.3);
+
+  /* Legacy variable mappings for dark mode */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-surface-subtle);
+  --bg-card: var(--bg-surface);
+  --primary: var(--bg-app);
+  --secondary: var(--bg-surface-subtle);
+  --accent: #3b82f6;
+  --accent-light: #1e3a8a;
+  --accent-dark: #1d4ed8;
+  --accent-hover: #60a5fa;
+  --text-dark: var(--text-primary);
+  --text-mid: var(--text-secondary);
+  --text-light: var(--text-tertiary);
+  --border: var(--border-default);
+  --border-color: var(--border-default);
+  --glass-bg: var(--bg-glass);
+  --glass-border: var(--border-glass);
+}

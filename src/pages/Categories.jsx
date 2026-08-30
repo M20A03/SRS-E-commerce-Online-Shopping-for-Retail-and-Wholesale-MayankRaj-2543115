@@ -1,24 +1,64 @@
-// IMPROVEMENT: High-performance, pixel-perfect responsive Categories page for Phone, Tablet, and Desktop
-import React, { useMemo, useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import ProductModal from '../components/ProductModal';
 import useProducts from '../hooks/useProducts';
 import useDebounce from '../hooks/useDebounce';
 import SEO from '../components/SEO';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import './Categories.css';
 
 const Categories = () => {
-  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = useParams();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [sortBy, setSortBy] = useState('featured');
+
+  const activeCategory = searchParams.get('cat') || 'all';
+  const initialSort = searchParams.get('sort') || 'featured';
+  const initialQuery = searchParams.get('q') || '';
+
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
+  const debouncedSearchTerm = useDebounce(searchTerm, 250);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [activeModalProduct, setActiveModalProduct] = useState(null);
+
   const { products, categories, isLoading } = useProducts();
 
-  const activeCategory = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return params.get('cat') || 'all';
-  }, [location.search]);
+  // Sync debounced search to URL query
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (debouncedSearchTerm) {
+        next.set('q', debouncedSearchTerm);
+      } else {
+        next.delete('q');
+      }
+      return next;
+    }, { replace: true });
+  }, [debouncedSearchTerm, setSearchParams]);
+
+  // Sync sort to URL query
+  const handleSortChange = useCallback((newSort) => {
+    setSortBy(newSort);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newSort && newSort !== 'featured') {
+        next.set('sort', newSort);
+      } else {
+        next.delete('sort');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Declaratively derive selected product from state or route param
+  const selectedProduct = useMemo(() => {
+    if (activeModalProduct) return activeModalProduct;
+    if (params.id && products.length > 0) {
+      return products.find((p) => String(p.id) === String(params.id)) || null;
+    }
+    return null;
+  }, [activeModalProduct, params.id, products]);
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === 'all') {
@@ -49,12 +89,27 @@ const Categories = () => {
   }, [filteredProducts, debouncedSearchTerm, sortBy]);
 
   const handleCategoryClick = useCallback((catId) => {
-    if (catId === 'all') {
-      navigate('/categories');
-    } else {
-      navigate(`/categories?cat=${catId}`);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (catId === 'all') {
+        next.delete('cat');
+      } else {
+        next.set('cat', catId);
+      }
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const handleOpenProductModal = useCallback((product) => {
+    setActiveModalProduct(product);
+  }, []);
+
+  const handleCloseProductModal = useCallback(() => {
+    setActiveModalProduct(null);
+    if (params.id) {
+      navigate('/categories', { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, params.id]);
 
   const activeCategoryLabel = activeCategory === 'all' ? 'All Collections' : categories.find((c) => c.id === activeCategory)?.name || activeCategory;
 
@@ -64,37 +119,23 @@ const Categories = () => {
         title={`${activeCategoryLabel} | Roshan Enterprises Dhanbad`}
         description={`Shop ${activeCategoryLabel} online at Roshan Enterprises. Find high quality mustard oil, sunflower oil, Assam tea, and household supplies in Dhanbad.`}
         canonicalPath={`/categories${activeCategory !== 'all' ? `?cat=${activeCategory}` : ''}`}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: [
-            {
-              '@type': 'ListItem',
-              position: 1,
-              name: 'Home',
-              item: 'https://e-commerce-roshan-enterprises-dhn.web.app/'
-            },
-            {
-              '@type': 'ListItem',
-              position: 2,
-              name: 'Categories',
-              item: 'https://e-commerce-roshan-enterprises-dhn.web.app/categories'
-            }
-          ]
-        }}
       />
+
       {/* Page Header */}
       <div className="categories-header">
         <h1 className="heading-1">Our Collections</h1>
         <p className="categories-subtitle">
-          Explore our premium range of cooking oils, teas, and household essentials carefully selected for you.
+          Explore our premium range of cooking oils, teas, and household essentials carefully selected for retail and wholesale.
         </p>
       </div>
 
       <div className="categories-layout">
-        {/* Sidebar Filters (Sticky on desktop, horizontal scrollable pills on mobile) */}
+        {/* Sidebar Filters */}
         <aside className="categories-sidebar">
-          <h3 className="sidebar-title">Categories</h3>
+          <div className="sidebar-header">
+            <SlidersHorizontal size={18} />
+            <h3 className="sidebar-title">Categories</h3>
+          </div>
           <ul className="category-list">
             <li>
               <button
@@ -122,21 +163,28 @@ const Categories = () => {
         {/* Main Products Container */}
         <main className="categories-main">
           <div className="categories-results-bar">
-            <span className="results-count">Showing <strong>{visibleProducts.length}</strong> products</span>
+            <span className="results-count">
+              Showing <strong>{visibleProducts.length}</strong> products
+            </span>
             <div className="categories-controls">
-              <input
-                type="search"
-                className="input categories-search"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-              />
+              <div className="search-input-wrapper">
+                <Search size={16} className="search-icon" />
+                <input
+                  type="search"
+                  className="input categories-search"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                />
+              </div>
+
               <select
                 className="input categories-sort"
                 value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
+                onChange={(event) => handleSortChange(event.target.value)}
+                aria-label="Sort products by"
               >
-                <option value="featured">Featured</option>
+                <option value="featured">Sort: Featured</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="name">Name: A-Z</option>
@@ -145,22 +193,53 @@ const Categories = () => {
           </div>
 
           {isLoading ? (
-            <div className="empty-state">
-              <p className="text-muted">Loading products...</p>
+            <div className="categories-products-grid">
+              {[...Array(6)].map((_, idx) => (
+                <div key={idx} className="product-card" style={{ padding: '1rem', minHeight: '320px' }}>
+                  <div className="skeleton" style={{ width: '100%', aspectRatio: '1/1', marginBottom: '1rem' }} />
+                  <div className="skeleton" style={{ width: '40%', height: '14px', marginBottom: '0.5rem' }} />
+                  <div className="skeleton" style={{ width: '80%', height: '20px', marginBottom: '1rem' }} />
+                  <div className="skeleton" style={{ width: '50%', height: '24px', marginTop: 'auto' }} />
+                </div>
+              ))}
             </div>
           ) : visibleProducts.length > 0 ? (
             <div className="categories-products-grid">
               {visibleProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onQuickView={handleOpenProductModal}
+                />
               ))}
             </div>
           ) : (
-            <div className="empty-state">
-              <p className="text-muted">No products found matching your search criteria.</p>
+            <div className="empty-state glass-panel">
+              <h3>No products found</h3>
+              <p className="text-muted">
+                Try adjusting your search terms or filter criteria to find what you are looking for.
+              </p>
+              <button
+                type="button"
+                className="btn btn-secondary mt-4"
+                onClick={() => {
+                  setSearchTerm('');
+                  handleCategoryClick('all');
+                }}
+              >
+                Reset Filters
+              </button>
             </div>
           )}
         </main>
       </div>
+
+      {/* Intercepting Modal Route for Product Quick-View */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={Boolean(selectedProduct)}
+        onClose={handleCloseProductModal}
+      />
     </div>
   );
 };
